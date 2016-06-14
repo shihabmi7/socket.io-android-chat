@@ -10,6 +10,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,8 +23,10 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -48,6 +51,7 @@ public class MainFragment extends Fragment {
     private Handler mTypingHandler = new Handler();
     private String mUsername;
     private Socket mSocket;
+    private String mUserID;
 
     private Boolean isConnected = true;
 
@@ -69,8 +73,8 @@ public class MainFragment extends Fragment {
 
         ChatApplication app = (ChatApplication) getActivity().getApplication();
         mSocket = app.getSocket();
-        mSocket.on(Socket.EVENT_CONNECT,onConnect);
-        mSocket.on(Socket.EVENT_DISCONNECT,onDisconnect);
+        mSocket.on(Socket.EVENT_CONNECT, onConnect);
+        mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
         mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
         mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
         mSocket.on("new message", onNewMessage);
@@ -78,11 +82,64 @@ public class MainFragment extends Fragment {
         mSocket.on("user left", onUserLeft);
         mSocket.on("typing", onTyping);
         mSocket.on("stop typing", onStopTyping);
+        // shihab added
+        mSocket.on("say to someone", onSayToSomeone);
         mSocket.connect();
 
         startSignIn();
     }
 
+    private void removeTyping(String username) {
+        for (int i = mMessages.size() - 1; i >= 0; i--) {
+            Message message = mMessages.get(i);
+            if (message.getType() == Message.TYPE_ACTION && message.getUsername().equals(username)) {
+                mMessages.remove(i);
+                mAdapter.notifyItemRemoved(i);
+            }
+        }
+    }
+
+    private void attemptSend() {
+        if (null == mUsername) return;
+        if (!mSocket.connected()) return;
+
+        mTyping = false;
+
+        String message = mInputMessageView.getText().toString().trim();
+        if (TextUtils.isEmpty(message)) {
+            mInputMessageView.requestFocus();
+            return;
+        }
+
+        mInputMessageView.setText("");
+        addMessage(mUsername, message);
+
+        // perform the sending message attempt.
+        String man = "";
+        mSocket.emit("new message", message);
+    }
+
+    private void sendToSpecificPeople() {
+        if (null == mUsername) return;
+        if (!mSocket.connected()) return;
+
+        mTyping = false;
+
+        String message = mInputMessageView.getText().toString().trim();
+        if (TextUtils.isEmpty(message)) {
+            mInputMessageView.requestFocus();
+            return;
+        }
+
+        mInputMessageView.setText("");
+        addMessage(mUsername, message);
+
+        // perform the sending message attempt.
+
+        //mUserID = "#nbGLY4GHVK7hYGJLAAAI";
+        mSocket.emit("say to someone", mUserID, message);
+        Log.e("send msg", "User Id: " + mUserID + " " + message);
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -104,6 +161,7 @@ public class MainFragment extends Fragment {
         mSocket.off("user left", onUserLeft);
         mSocket.off("typing", onTyping);
         mSocket.off("stop typing", onStopTyping);
+        mSocket.off("say to someone", onSayToSomeone);
     }
 
     @Override
@@ -119,7 +177,9 @@ public class MainFragment extends Fragment {
             @Override
             public boolean onEditorAction(TextView v, int id, KeyEvent event) {
                 if (id == R.id.send || id == EditorInfo.IME_NULL) {
-                    attemptSend();
+                    //attemptSend();
+
+                    sendToSpecificPeople();
                     return true;
                 }
                 return false;
@@ -153,7 +213,8 @@ public class MainFragment extends Fragment {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                attemptSend();
+                //attemptSend();
+                sendToSpecificPeople();
             }
         });
     }
@@ -220,34 +281,6 @@ public class MainFragment extends Fragment {
         scrollToBottom();
     }
 
-    private void removeTyping(String username) {
-        for (int i = mMessages.size() - 1; i >= 0; i--) {
-            Message message = mMessages.get(i);
-            if (message.getType() == Message.TYPE_ACTION && message.getUsername().equals(username)) {
-                mMessages.remove(i);
-                mAdapter.notifyItemRemoved(i);
-            }
-        }
-    }
-
-    private void attemptSend() {
-        if (null == mUsername) return;
-        if (!mSocket.connected()) return;
-
-        mTyping = false;
-
-        String message = mInputMessageView.getText().toString().trim();
-        if (TextUtils.isEmpty(message)) {
-            mInputMessageView.requestFocus();
-            return;
-        }
-
-        mInputMessageView.setText("");
-        addMessage(mUsername, message);
-
-        // perform the sending message attempt.
-        mSocket.emit("new message", message);
-    }
 
     private void startSignIn() {
         mUsername = null;
@@ -268,17 +301,31 @@ public class MainFragment extends Fragment {
 
     private Emitter.Listener onConnect = new Emitter.Listener() {
         @Override
-        public void call(Object... args) {
+        public void call(final Object... args) {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if(!isConnected) {
-                        if(null!=mUsername)
-                            mSocket.emit("add user", mUsername);
-                        Toast.makeText(getActivity().getApplicationContext(),
-                                R.string.connect, Toast.LENGTH_LONG).show();
-                        isConnected = true;
+
+                    try {
+
+                        JSONObject data = (JSONObject) args[0];
+                        Log.e("onConnect", "" + data.toString());
+
+                        if (!isConnected) {
+                            if (null != mUsername)
+                                mSocket.emit("add user", mUsername);
+
+                            Toast.makeText(getActivity().getApplicationContext(),
+                                    R.string.connect, Toast.LENGTH_LONG).show();
+
+                            isConnected = true;
+                        }
+
+                    } catch (Exception e) {
+
                     }
+
+
                 }
             });
         }
@@ -344,8 +391,11 @@ public class MainFragment extends Fragment {
                     String username;
                     int numUsers;
                     try {
+
+                        Log.e("on User Joined", "" + data.toString());
                         username = data.getString("username");
                         numUsers = data.getInt("numUsers");
+                        mUserID = data.getString("socket_id");
                     } catch (JSONException e) {
                         return;
                     }
@@ -399,6 +449,34 @@ public class MainFragment extends Fragment {
             });
         }
     };
+
+
+    private Emitter.Listener onSayToSomeone = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    String username;
+                    String message;
+
+                    Log.e("on Say To Someone", "" + data.toString());
+                    try {
+                        username = data.getString("username");
+                        message = data.getString("message");
+
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+                    removeTyping(username);
+                    addMessage(username, message);
+                }
+            });
+        }
+    };
+
 
     private Emitter.Listener onStopTyping = new Emitter.Listener() {
         @Override

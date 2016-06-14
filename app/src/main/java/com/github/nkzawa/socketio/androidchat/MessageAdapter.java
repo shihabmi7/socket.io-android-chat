@@ -23,6 +23,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         int layout = -1;
+
         switch (viewType) {
         case Message.TYPE_MESSAGE:
             layout = R.layout.item_message;
@@ -34,9 +35,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             layout = R.layout.item_action;
             break;
         }
+
         View v = LayoutInflater
                 .from(parent.getContext())
                 .inflate(layout, parent, false);
+
         return new ViewHolder(v);
     }
 
