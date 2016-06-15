@@ -120,8 +120,10 @@ public class MainFragment extends Fragment {
     }
 
     private void sendToSpecificPeople() {
-        if (null == mUsername) return;
-        if (!mSocket.connected()) return;
+        if (null == mUsername)
+            return;
+        if (!mSocket.connected())
+            return;
 
         mTyping = false;
 
@@ -136,7 +138,7 @@ public class MainFragment extends Fragment {
 
         // perform the sending message attempt.
 
-        //mUserID = "#nbGLY4GHVK7hYGJLAAAI";
+
         mSocket.emit("say to someone", mUserID, message);
         Log.e("send msg", "User Id: " + mUserID + " " + message);
     }
