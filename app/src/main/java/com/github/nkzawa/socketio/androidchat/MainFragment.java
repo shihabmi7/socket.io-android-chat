@@ -66,6 +66,12 @@ public class MainFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+       // UserRegistration();
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -84,7 +90,10 @@ public class MainFragment extends Fragment {
         mSocket.on("stop typing", onStopTyping);
         // shihab added
         mSocket.on("say to someone", onSayToSomeone);
+        mSocket.on("user_registration", user_registration);
         mSocket.connect();
+
+        // called
 
         startSignIn();
     }
@@ -138,10 +147,17 @@ public class MainFragment extends Fragment {
 
         // perform the sending message attempt.
 
-
+        //logIn();
         mSocket.emit("say to someone", mUserID, message);
         Log.e("send msg", "User Id: " + mUserID + " " + message);
     }
+
+    private void UserRegistration() {
+
+        mSocket.emit("user_registration", mUsername, mUsername+"@gmail.com");
+
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -164,6 +180,8 @@ public class MainFragment extends Fragment {
         mSocket.off("typing", onTyping);
         mSocket.off("stop typing", onStopTyping);
         mSocket.off("say to someone", onSayToSomeone);
+       // mSocket.off("say to someone", onSayToSomeone);
+        mSocket.off("user_registration", user_registration);
     }
 
     @Override
@@ -234,6 +252,7 @@ public class MainFragment extends Fragment {
 
         addLog(getResources().getString(R.string.message_welcome));
         addParticipantsLog(numUsers);
+        UserRegistration();
     }
 
     @Override
@@ -474,6 +493,31 @@ public class MainFragment extends Fragment {
 
                     removeTyping(username);
                     addMessage(username, message);
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener user_registration = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    String username;
+                    String message;
+                   // Log.e("on Say To Someone", "" + data.toString());
+                    try {
+                      //  username = data.getString("username");
+                        message = data.getString("message");
+
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+                    //removeTyping(username);
+                    //addMessage(username, message);
                 }
             });
         }
