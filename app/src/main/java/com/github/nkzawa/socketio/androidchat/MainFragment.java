@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -24,14 +26,15 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import io.socket.client.Socket;
-import io.socket.emitter.Emitter;
-
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 
 
 /**
@@ -46,7 +49,7 @@ public class MainFragment extends Fragment {
     private RecyclerView mMessagesView;
     private EditText mInputMessageView;
     private List<Message> mMessages = new ArrayList<Message>();
-    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.Adapter mAdapter,mUsrAdapter;
     private boolean mTyping = false;
     private Handler mTypingHandler = new Handler();
     private String mUsername;
@@ -54,6 +57,8 @@ public class MainFragment extends Fragment {
     private String mUserID;
 
     private Boolean isConnected = true;
+    private RecyclerView mUserListView;
+    ArrayList<User>   mUserList =new ArrayList<User>();
 
     public MainFragment() {
         super();
@@ -63,6 +68,8 @@ public class MainFragment extends Fragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         mAdapter = new MessageAdapter(activity, mMessages);
+        // shiahb
+        mUsrAdapter=new UserAdapter(activity,mUserList);
     }
 
     @Override
@@ -191,6 +198,28 @@ public class MainFragment extends Fragment {
         mMessagesView = (RecyclerView) view.findViewById(R.id.messages);
         mMessagesView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mMessagesView.setAdapter(mAdapter);
+
+        // shihab
+
+        mUserListView = (RecyclerView)view.findViewById(R.id.userList   ) ;
+        mUserListView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mUserListView .setAdapter(mUsrAdapter);
+
+        mUserListView.addOnItemTouchListener(new RecyclerTouchListener(getActivity(), mUserListView, new ClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                User user = mUserList.get(position);
+                //Toast.makeText(getApplicationContext(), movie.getTitle() + " is selected!", Toast.LENGTH_SHORT).show();
+
+                Snackbar.make(view, "" + user.getUserName(), Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+
+            }
+        }));
 
         mInputMessageView = (EditText) view.findViewById(R.id.message_input);
         mInputMessageView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -504,20 +533,30 @@ public class MainFragment extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    JSONObject data = (JSONObject) args[0];
-                    String username;
-                    String message;
-                   // Log.e("on Say To Someone", "" + data.toString());
                     try {
-                      //  username = data.getString("username");
-                        message = data.getString("message");
+
+                        JSONArray jsonArray = new JSONArray(args);
+
+                        String aa = jsonArray.getString(0).toString();
+                        JSONArray newArr = new JSONArray(aa);
+//                        Log.e("email",newArr.getJSONObject(0).getString("email"));
+                        for (int i = 0; i < newArr.length(); i++) {
+
+                            JSONObject jsonObject =  newArr.getJSONObject(i);
+
+                            User user =new User();
+                            user.setUserName(jsonObject.getString("email"));
+                            user.setStatus("online");
+                            //user.setStatus(jsonObject.getString("status"));
+                            Log.e("email", jsonObject.getString("email"));
+                            mUserList.add(user);
+                        }
 
                     } catch (JSONException e) {
-                        return;
+                        Log.e("user_registration","JSONException"+e.toString());
+                        //return;
                     }
 
-                    //removeTyping(username);
-                    //addMessage(username, message);
                 }
             });
         }
@@ -552,5 +591,12 @@ public class MainFragment extends Fragment {
             mSocket.emit("stop typing");
         }
     };
+
+    public interface ClickListener {
+        void onClick(View view, int position);
+
+        void onLongClick(View view, int position);
+    }
+
 }
 
