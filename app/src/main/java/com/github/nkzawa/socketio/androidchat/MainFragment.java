@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -43,13 +42,12 @@ import io.socket.emitter.Emitter;
 public class MainFragment extends Fragment {
 
     private static final int REQUEST_LOGIN = 0;
-
     private static final int TYPING_TIMER_LENGTH = 600;
 
     private RecyclerView mMessagesView;
     private EditText mInputMessageView;
     private List<Message> mMessages = new ArrayList<Message>();
-    private RecyclerView.Adapter mAdapter,mUsrAdapter;
+    private RecyclerView.Adapter mAdapter, mUsrAdapter;
     private boolean mTyping = false;
     private Handler mTypingHandler = new Handler();
     private String mUsername;
@@ -58,7 +56,8 @@ public class MainFragment extends Fragment {
 
     private Boolean isConnected = true;
     private RecyclerView mUserListView;
-    ArrayList<User>   mUserList =new ArrayList<User>();
+    ArrayList<User> mUserList = new ArrayList<User>();
+    User mReceiveUser;
 
     public MainFragment() {
         super();
@@ -69,13 +68,13 @@ public class MainFragment extends Fragment {
         super.onAttach(activity);
         mAdapter = new MessageAdapter(activity, mMessages);
         // shiahb
-        mUsrAdapter=new UserAdapter(activity,mUserList);
+        mUsrAdapter = new UserAdapter(activity, mUserList);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-       // UserRegistration();
+        // UserRegistration();
     }
 
     @Override
@@ -149,19 +148,27 @@ public class MainFragment extends Fragment {
             return;
         }
 
-        mInputMessageView.setText("");
-        addMessage(mUsername, message);
-
         // perform the sending message attempt.
+        if (mReceiveUser != null) {
 
-        //logIn();
-        mSocket.emit("say to someone", mUserID, message);
-        Log.e("send msg", "User Id: " + mUserID + " " + message);
+            mInputMessageView.setText("");
+            addMessage("me: " + mUsername, message);
+
+            mSocket.emit("say to someone", mUsername, mReceiveUser.getSocket_id(), mReceiveUser.getEmail(), message);
+            Log.e("send msg", "User Id: " + mReceiveUser.getSocket_id() + "  " + mReceiveUser.getEmail() + "  " + message);
+
+        } else {
+
+            Toast.makeText(getActivity(), "please select a user", Toast.LENGTH_SHORT).show();
+            mInputMessageView.setText("");
+            //addMessage(mUsername, message);
+        }
+
     }
 
     private void UserRegistration() {
 
-        mSocket.emit("user_registration", mUsername, mUsername+"@gmail.com");
+        mSocket.emit("user_registration", mUsername, mUsername + "@gmail.com");
 
     }
 
@@ -187,9 +194,10 @@ public class MainFragment extends Fragment {
         mSocket.off("typing", onTyping);
         mSocket.off("stop typing", onStopTyping);
         mSocket.off("say to someone", onSayToSomeone);
-       // mSocket.off("say to someone", onSayToSomeone);
+        // mSocket.off("say to someone", onSayToSomeone);
         mSocket.off("user_registration", user_registration);
     }
+
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -201,18 +209,21 @@ public class MainFragment extends Fragment {
 
         // shihab
 
-        mUserListView = (RecyclerView)view.findViewById(R.id.userList   ) ;
+        mUserListView = (RecyclerView) view.findViewById(R.id.userList);
         mUserListView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        mUserListView .setAdapter(mUsrAdapter);
+        mUserListView.setAdapter(mUsrAdapter);
 
         mUserListView.addOnItemTouchListener(new RecyclerTouchListener(getActivity(), mUserListView, new ClickListener() {
             @Override
             public void onClick(View view, int position) {
-                User user = mUserList.get(position);
+
+                mReceiveUser = mUserList.get(position);
                 //Toast.makeText(getApplicationContext(), movie.getTitle() + " is selected!", Toast.LENGTH_SHORT).show();
 
-                Snackbar.make(view, "" + user.getUserName(), Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+//                Snackbar.make(view, "" + mReceiveUser.getUserName() + " " + mReceiveUser.getSocket_id(), Snackbar.LENGTH_SHORT)
+//                        .setAction("Action", null).show();
+
+                Toast.makeText(getActivity(), mReceiveUser.getUserName() + " selected", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -428,6 +439,7 @@ public class MainFragment extends Fragment {
                     addMessage(username, message);
                 }
             });
+
         }
     };
 
@@ -513,6 +525,7 @@ public class MainFragment extends Fragment {
 
                     Log.e("on Say To Someone", "" + data.toString());
                     try {
+
                         username = data.getString("username");
                         message = data.getString("message");
 
@@ -538,22 +551,25 @@ public class MainFragment extends Fragment {
                         JSONArray jsonArray = new JSONArray(args);
 
                         String aa = jsonArray.getString(0).toString();
+                        Log.e("data:", aa);
                         JSONArray newArr = new JSONArray(aa);
 //                        Log.e("email",newArr.getJSONObject(0).getString("email"));
                         for (int i = 0; i < newArr.length(); i++) {
 
-                            JSONObject jsonObject =  newArr.getJSONObject(i);
+                            JSONObject jsonObject = newArr.getJSONObject(i);
 
-                            User user =new User();
-                            user.setUserName(jsonObject.getString("email"));
+                            User user = new User();
+                            user.setUserName(jsonObject.getString("user_name"));
+                            user.setEmail(jsonObject.getString("email"));
                             user.setStatus("online");
+                            user.setSocket_id(jsonObject.getString("socket_id"));
                             //user.setStatus(jsonObject.getString("status"));
                             Log.e("email", jsonObject.getString("email"));
                             mUserList.add(user);
                         }
 
                     } catch (JSONException e) {
-                        Log.e("user_registration","JSONException"+e.toString());
+                        Log.e("user_registration", "JSONException" + e.toString());
                         //return;
                     }
 

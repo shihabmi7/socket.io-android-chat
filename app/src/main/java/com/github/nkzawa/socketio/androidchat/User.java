@@ -9,6 +9,7 @@ public class User {
     private String email;
     private String lastSeen;
     private String status;
+    private String socket_id;
 
     public String getUserName() {
         return userName;
@@ -40,5 +41,13 @@ public class User {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getSocket_id() {
+        return socket_id;
+    }
+
+    public void setSocket_id(String socket_id) {
+        this.socket_id = socket_id;
     }
 }
