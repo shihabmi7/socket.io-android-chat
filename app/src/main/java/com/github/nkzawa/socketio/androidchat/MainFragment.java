@@ -548,6 +548,8 @@ public class MainFragment extends Fragment {
                 public void run() {
                     try {
 
+                        mUserList.clear();
+
                         JSONArray jsonArray = new JSONArray(args);
 
                         String aa = jsonArray.getString(0).toString();
@@ -558,8 +560,15 @@ public class MainFragment extends Fragment {
 
                             JSONObject jsonObject = newArr.getJSONObject(i);
 
-                            User user = new User();
-                            user.setUserName(jsonObject.getString("user_name"));
+                            User user = new User();String name = jsonObject.getString("user_name");
+                            user.setUserName(name);
+
+                            if (name.equalsIgnoreCase(mUsername)){
+
+                                Log.e("user_matched","I am "+mUsername);
+                                continue;
+
+                            }
                             user.setEmail(jsonObject.getString("email"));
                             user.setStatus("online");
                             user.setSocket_id(jsonObject.getString("socket_id"));
@@ -567,9 +576,13 @@ public class MainFragment extends Fragment {
                             Log.e("email", jsonObject.getString("email"));
                             mUserList.add(user);
                         }
+                        mUsrAdapter.notifyDataSetChanged();
 
                     } catch (JSONException e) {
                         Log.e("user_registration", "JSONException" + e.toString());
+                        //return;
+                    }catch (Exception e) {
+                        Log.e("user_registration", "Exception" + e.toString());
                         //return;
                     }
 
