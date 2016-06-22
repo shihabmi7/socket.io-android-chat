@@ -1,7 +1,9 @@
 package com.github.nkzawa.socketio.androidchat;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -11,8 +13,10 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,11 +31,16 @@ public class LoginActivity extends Activity {
     private String mUsername;
 
     private Socket mSocket;
+    PrefsValues prefsValues;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+
+        prefsValues = new PrefsValues(this);
+
 
         ChatApplication app = (ChatApplication) getApplication();
         mSocket = app.getSocket();
@@ -58,6 +67,12 @@ public class LoginActivity extends Activity {
         });
 
         mSocket.on("login", onLogin);
+
+        if (prefsValues.getUserName().length() > 0) {
+
+            oldUserLogin(prefsValues.getUserName());
+        }
+
     }
 
     @Override
@@ -90,6 +105,18 @@ public class LoginActivity extends Activity {
 
         mUsername = username;
 
+        // set user name to preference
+
+        prefsValues.setUserName(mUsername);
+
+        // perform the user login attempt.
+        mSocket.emit("add user", username+"@gmail.com");
+    }
+
+    private void oldUserLogin(String username) {
+
+        mUsername = username;
+
         // perform the user login attempt.
         mSocket.emit("add user", username);
     }
@@ -113,6 +140,13 @@ public class LoginActivity extends Activity {
             finish();
         }
     };
+
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+    }
 }
 
 

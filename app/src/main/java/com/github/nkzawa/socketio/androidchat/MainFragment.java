@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -58,6 +59,8 @@ public class MainFragment extends Fragment {
     private RecyclerView mUserListView;
     ArrayList<User> mUserList = new ArrayList<User>();
     User mReceiveUser;
+    Button mLogOutButton;
+    private PrefsValues prefsValues;
 
     public MainFragment() {
         super();
@@ -97,10 +100,13 @@ public class MainFragment extends Fragment {
         // shihab added
         mSocket.on("say to someone", onSayToSomeone);
         mSocket.on("user_registration", user_registration);
+        mSocket.on("get_Offline_Message", getOfflineMessage);
+
         mSocket.connect();
 
         // called
 
+        prefsValues = new PrefsValues(getActivity());
         startSignIn();
     }
 
@@ -196,6 +202,7 @@ public class MainFragment extends Fragment {
         mSocket.off("say to someone", onSayToSomeone);
         // mSocket.off("say to someone", onSayToSomeone);
         mSocket.off("user_registration", user_registration);
+        mSocket.off("get_Offline_Message", getOfflineMessage);
     }
 
 
@@ -203,10 +210,20 @@ public class MainFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+
+
         mMessagesView = (RecyclerView) view.findViewById(R.id.messages);
         mMessagesView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mMessagesView.setAdapter(mAdapter);
 
+        mLogOutButton = (Button) view.findViewById(R.id.button);
+        mLogOutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                logOut();
+            }
+        });
         // shihab
 
         mUserListView = (RecyclerView) view.findViewById(R.id.userList);
@@ -344,9 +361,21 @@ public class MainFragment extends Fragment {
 
 
     private void startSignIn() {
+
+
         mUsername = null;
         Intent intent = new Intent(getActivity(), LoginActivity.class);
         startActivityForResult(intent, REQUEST_LOGIN);
+    }
+
+    private void logOut() {
+
+        prefsValues.clearValue("user_name");
+//        mUsername = null;
+//        Intent intent = new Intent(getActivity(), LoginActivity.class);
+//        startActivity(intent);
+        getActivity().finish();
+        //startActivityForResult(intent, REQUEST_LOGIN);
     }
 
     private void leave() {
@@ -523,7 +552,7 @@ public class MainFragment extends Fragment {
                     String username;
                     String message;
 
-                    Log.e("on Say To Someone", "" + data.toString());
+                    Log.e("Say To Someone", "" + data.toString());
                     try {
 
                         username = data.getString("username");
@@ -535,6 +564,47 @@ public class MainFragment extends Fragment {
 
                     removeTyping(username);
                     addMessage(username, message);
+                }
+            });
+        }
+    };
+
+
+    private Emitter.Listener getOfflineMessage = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+
+                    try {
+
+                        JSONArray jsonArray = new JSONArray(args);
+
+                        String aa = jsonArray.getString(0).toString();
+                        Log.e("getOfflineMessage:", aa);
+                        JSONArray newArr = new JSONArray(aa);
+//                        Log.e("email",newArr.getJSONObject(0).getString("email"));
+                        for (int i = 0; i < newArr.length(); i++) {
+
+                            JSONObject jsonObject = newArr.getJSONObject(i);
+
+                            String sender_name = jsonObject.getString("sender_mail");
+
+                            addMessage(sender_name, jsonObject.getString("message"));
+
+                        }
+
+                    } catch (JSONException e) {
+                        Log.e("user_registration", "JSONException" + e.toString());
+                        //return;
+                    } catch (Exception e) {
+                        Log.e("user_registration", "Exception" + e.toString());
+                        //return;
+                    }
+
+
                 }
             });
         }
@@ -560,12 +630,13 @@ public class MainFragment extends Fragment {
 
                             JSONObject jsonObject = newArr.getJSONObject(i);
 
-                            User user = new User();String name = jsonObject.getString("user_name");
+                            User user = new User();
+                            String name = jsonObject.getString("user_name");
                             user.setUserName(name);
 
-                            if (name.equalsIgnoreCase(mUsername)){
+                            if (name.equalsIgnoreCase(mUsername)) {
 
-                                Log.e("user_matched","I am "+mUsername);
+                                Log.e("user_matched", "I am " + mUsername);
                                 continue;
 
                             }
@@ -581,7 +652,7 @@ public class MainFragment extends Fragment {
                     } catch (JSONException e) {
                         Log.e("user_registration", "JSONException" + e.toString());
                         //return;
-                    }catch (Exception e) {
+                    } catch (Exception e) {
                         Log.e("user_registration", "Exception" + e.toString());
                         //return;
                     }

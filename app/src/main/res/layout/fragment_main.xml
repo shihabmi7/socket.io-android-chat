@@ -2,9 +2,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     tools:context=".MainFragment">
 
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Log Out"
+        android:id="@+id/button"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/userList"
@@ -13,6 +20,7 @@
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:scrollbarStyle="outsideOverlay"
+        android:layout_below="@+id/button"
         android:scrollbars="vertical" />
 
     <android.support.v7.widget.RecyclerView
@@ -57,5 +65,7 @@
             android:src="@android:drawable/ic_menu_send" />
 
     </LinearLayout>
+
+
 
 </RelativeLayout>
