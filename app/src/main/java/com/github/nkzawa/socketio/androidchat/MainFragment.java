@@ -590,6 +590,7 @@ public class MainFragment extends Fragment {
 
                         JSONArray jsonArray = new JSONArray(args);
 
+
                         String aa = jsonArray.getString(0).toString();
                         Log.e("getOfflineMessage:", aa);
                         JSONArray newArr = new JSONArray(aa);
