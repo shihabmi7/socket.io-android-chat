@@ -5,7 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -13,8 +15,10 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import io.socket.client.Socket;
+import io.socket.client.SocketIOException;
 import io.socket.emitter.Emitter;
 
 import org.json.JSONException;
@@ -31,48 +35,77 @@ public class LoginActivity extends Activity {
     private String mUsername;
 
     private Socket mSocket;
-    PrefsValues prefsValues;
+    PrefsValues prefsValues;ChatApplication app;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        try {
 
-        prefsValues = new PrefsValues(this);
+            prefsValues = new PrefsValues(getApplicationContext(),"chat_me",0);
 
 
-        ChatApplication app = (ChatApplication) getApplication();
-        mSocket = app.getSocket();
+            app = (ChatApplication) getApplication();
+            //mSocket = app.getSocket();
 
-        // Set up the login form.
-        mUsernameView = (EditText) findViewById(R.id.username_input);
-        mUsernameView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
-                    return true;
+            // Set up the login form.
+            mUsernameView = (EditText) findViewById(R.id.username_input);
+            mUsernameView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                    if (id == R.id.login || id == EditorInfo.IME_NULL) {
+                        attemptLogin();
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
+            });
+
+            Button signInButton = (Button) findViewById(R.id.sign_in_button);
+            signInButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    attemptLogin();
+                }
+            });
+
+            //mSocket.on("login", onLogin);
+
+            String name =prefsValues.getUserName();
+
+            if (!name.isEmpty()) {
+
+                oldUserLogin(prefsValues.getUserName());
+
+                Toast.makeText(getApplicationContext(),"Successfully Logged in",Toast.LENGTH_LONG);
             }
-        });
 
-        Button signInButton = (Button) findViewById(R.id.sign_in_button);
-        signInButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptLogin();
-            }
-        });
+        }catch (Exception e){
 
-        mSocket.on("login", onLogin);
+            Toast.makeText(getApplicationContext(),"Error"+e.toString(),Toast.LENGTH_LONG);
 
-        if (prefsValues.getUserName().length() > 0) {
-
-            oldUserLogin(prefsValues.getUserName());
         }
 
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        mSocket = app.getSocket();
+        mSocket.on("login", onLogin);
+
+        Log.e("onResume","onResume");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mSocket.off("login", onLogin);
+        Log.e("onPause","onPause");
     }
 
     @Override
@@ -118,7 +151,7 @@ public class LoginActivity extends Activity {
         mUsername = username;
 
         // perform the user login attempt.
-        mSocket.emit("add user", username);
+        mSocket.emit("add user", username+"@gmail.com");
     }
 
     private Emitter.Listener onLogin = new Emitter.Listener() {
@@ -145,8 +178,17 @@ public class LoginActivity extends Activity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-
+        exitApp();
     }
+    void exitApp() {
+        Intent startMain = new Intent(Intent.ACTION_MAIN);
+        startMain.addCategory(Intent.CATEGORY_HOME);
+        startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(startMain);
+        System.exit(0);
+        android.os.Process.killProcess(android.os.Process.myPid());
+    }
+
 }
 
 

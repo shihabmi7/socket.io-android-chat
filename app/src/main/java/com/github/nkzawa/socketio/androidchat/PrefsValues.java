@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.v4.content.ContextCompat;
 
 public class PrefsValues {
 
@@ -28,12 +29,19 @@ public class PrefsValues {
     }
 
 
-//    public PrefsValues(Context context) {
-//
-//        this.context = context;
-//        mPrefs = PreferenceManager.getDefaultSharedPreferences(this.context);
-//
-//    }
+    public PrefsValues(Context context) {
+
+        this.context = context;
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(this.context);
+
+    }
+
+    public PrefsValues(Context context,String name, int mode) {
+
+        this.context = context;
+         mPrefs = this.context.getSharedPreferences(name,mode);
+
+    }
 
     public PrefsValues(Activity activity) {
 
@@ -65,13 +73,7 @@ public class PrefsValues {
 
     }
 
-    public String getActivityName() {
-        return mPrefs.getString("activityName", "");
-    }
 
-    public void setActivityName(String activityName) {
-        mPrefs.edit().putString("activityName", activityName).commit();
-    }
 
 
     public void clearPreference(String value) {
@@ -92,6 +94,22 @@ public class PrefsValues {
     public void clearValue(String key) {
 
         SharedPreferences preferences = activity.getPreferences(Context.MODE_PRIVATE);
-        preferences.edit().clear().clear();
+        preferences.getAll().clear();
+
+
+    }
+
+    public void clear()
+    {
+//        SharedPreferences prefs; // here you get your prefrences by either of two methods
+//        SharedPreferences.Editor editor = getPrefs().edit();
+//        editor.clear();
+//        editor.commit();
+
+        SharedPreferences preferences = context.getSharedPreferences("chat_me", 0);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
+        editor.commit();
+
     }
 }

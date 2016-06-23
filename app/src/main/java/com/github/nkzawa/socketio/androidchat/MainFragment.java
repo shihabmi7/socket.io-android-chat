@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -106,7 +107,7 @@ public class MainFragment extends Fragment {
 
         // called
 
-        prefsValues = new PrefsValues(getActivity());
+       prefsValues = new PrefsValues(getActivity().getApplicationContext(),"chat_me",0);
         startSignIn();
     }
 
@@ -297,6 +298,11 @@ public class MainFragment extends Fragment {
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (Activity.RESULT_OK != resultCode) {
@@ -370,7 +376,9 @@ public class MainFragment extends Fragment {
 
     private void logOut() {
 
-        prefsValues.clearValue("user_name");
+        prefsValues.clear();
+
+//        prefsValues.getPrefs().edit().clear();
 //        mUsername = null;
 //        Intent intent = new Intent(getActivity(), LoginActivity.class);
 //        startActivity(intent);
