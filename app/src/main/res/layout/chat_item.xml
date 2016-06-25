@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/card_view_friend"
+    android:layout_width="match_parent"
+    android:layout_height="100dp">
+
+    <RelativeLayout
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:id="@+id/img_rl"
+        android:layout_centerVertical="true">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/menu_img"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_launcher"
+            android:layout_margin="15dp"/>
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_toRightOf="@+id/img_rl">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/chat_time"
+                android:id="@+id/chat_rl"
+                android:layout_marginRight="5dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/messanger_name"
+                    android:textStyle="bold"
+                    android:textSize="17dp"
+                    android:textColor="@android:color/black"
+                    android:text="Cyber Agent"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/msger_job_name"
+                    android:layout_below="@+id/messanger_name"
+                    android:textSize="14dp"
+                    android:layout_marginTop="2dp"
+                    android:textColor="#222222"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:text="Research Engineer (NLP) - Python, Java"/>
+
+                <!--<TextView-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:id="@+id/msger_msg"-->
+                    <!--android:layout_below="@+id/msger_job_name"-->
+                    <!--android:textSize="13dp"-->
+                    <!--android:textColor="#666666"-->
+                    <!--android:maxLines="1"-->
+                    <!--android:ellipsize="end"-->
+                    <!--android:layout_marginTop="2dp"-->
+                    <!--android:text="We are just writing up the user stories now so will have requirements for you next week."/>-->
+
+            </RelativeLayout>
+
+
+            <TextView
+                android:id="@+id/chat_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="18.00 PM"
+                android:layout_alignParentRight="true"
+                android:textColor="#444444"
+                android:textSize="12dp"
+                android:layout_alignBottom="@+id/chat_rl"/>
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#BBBBBB"
+            android:layout_alignParentBottom="true"
+            android:layout_marginRight="10dp">
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>
+
+
+
+<!--<?xml version="1.0" encoding="utf-8"?>-->
+<!--<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent" >-->
+
+    <!--<ImageView-->
+        <!--android:id="@+id/imageView1"-->
+        <!--android:layout_width="50dp"-->
+        <!--android:layout_height="40dp"-->
+        <!--android:layout_alignParentLeft="true"-->
+        <!--android:layout_alignParentTop="true"-->
+        <!--android:layout_marginLeft="18dp"-->
+        <!--android:layout_marginTop="16dp"-->
+        <!--android:src="@drawable/ic_launcher" />-->
+
+    <!--<TextView-->
+        <!--android:id="@+id/textView1"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignBottom="@+id/imageView1"-->
+        <!--android:layout_centerHorizontal="true"-->
+        <!--android:text="Large Text"-->
+        <!-- -->
+        <!--android:textAppearance="?android:attr/textAppearanceLarge" />-->
+
+<!--</RelativeLayout>-->

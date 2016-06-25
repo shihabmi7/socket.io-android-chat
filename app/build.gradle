@@ -18,7 +18,7 @@ android {
     defaultConfig {
         applicationId 'com.github.nkzawa.socketio.androidchat'
         minSdkVersion 15
-        targetSdkVersion 21
+        targetSdkVersion 23
         versionCode 1
         versionName "1.0"
     }
@@ -34,9 +34,13 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:23.0.+'
-    compile 'com.android.support:design:23.1.1'
-    compile 'com.android.support:recyclerview-v7:23.0.+'
+
+    compile 'com.android.support:appcompat-v7:23.3.0'
+    compile 'com.android.support:design:23.3.0'
+    compile 'com.android.support:cardview-v7:23.3.0'
+    compile 'de.hdodenhof:circleimageview:1.3.0'
+    compile 'me.relex:circleindicator:1.1.8@aar'
+    compile 'com.android.support:recyclerview-v7:23.3.0'
     compile ('io.socket:socket.io-client:0.7.0') {
         exclude group: 'org.json', module: 'json'
     }

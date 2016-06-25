@@ -35,7 +35,8 @@ public class LoginActivity extends Activity {
     private String mUsername;
 
     private Socket mSocket;
-    PrefsValues prefsValues;ChatApplication app;
+    PrefsValues prefsValues;
+    ChatApplication app;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +45,7 @@ public class LoginActivity extends Activity {
 
         try {
 
-            prefsValues = new PrefsValues(getApplicationContext(),"chat_me",0);
+            prefsValues = new PrefsValues(getApplicationContext(), "chat_me", 0);
 
 
             app = (ChatApplication) getApplication();
@@ -73,18 +74,18 @@ public class LoginActivity extends Activity {
 
             //mSocket.on("login", onLogin);
 
-            String name =prefsValues.getUserName();
+            String name = prefsValues.getUserName();
 
             if (!name.isEmpty()) {
 
                 oldUserLogin(prefsValues.getUserName());
 
-                Toast.makeText(getApplicationContext(),"Successfully Logged in",Toast.LENGTH_LONG);
+                Toast.makeText(getApplicationContext(), "Successfully Logged in", Toast.LENGTH_LONG);
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
 
-            Toast.makeText(getApplicationContext(),"Error"+e.toString(),Toast.LENGTH_LONG);
+            Toast.makeText(getApplicationContext(), "Error" + e.toString(), Toast.LENGTH_LONG);
 
         }
 
@@ -98,14 +99,14 @@ public class LoginActivity extends Activity {
         mSocket = app.getSocket();
         mSocket.on("login", onLogin);
 
-        Log.e("onResume","onResume");
+        Log.e("onResume", "onResume");
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         mSocket.off("login", onLogin);
-        Log.e("onPause","onPause");
+        Log.e("onPause", "onPause");
     }
 
     @Override
@@ -143,7 +144,7 @@ public class LoginActivity extends Activity {
         prefsValues.setUserName(mUsername);
 
         // perform the user login attempt.
-        mSocket.emit("add user", username+"@gmail.com");
+        mSocket.emit("add user", username + "@gmail.com");
     }
 
     private void oldUserLogin(String username) {
@@ -151,7 +152,7 @@ public class LoginActivity extends Activity {
         mUsername = username;
 
         // perform the user login attempt.
-        mSocket.emit("add user", username+"@gmail.com");
+        mSocket.emit("add user", username + "@gmail.com");
     }
 
     private Emitter.Listener onLogin = new Emitter.Listener() {
@@ -166,13 +167,23 @@ public class LoginActivity extends Activity {
                 return;
             }
 
-            Intent intent = new Intent();
-            intent.putExtra("username", mUsername);
-            intent.putExtra("numUsers", numUsers);
-            setResult(RESULT_OK, intent);
-            finish();
+//            Intent intent = new Intent();
+//            intent.putExtra("username", mUsername);
+//            intent.putExtra("numUsers", numUsers);
+//            setResult(RESULT_OK, intent);
+//            finish();
+            goToHomePage(mUsername, numUsers);
         }
     };
+
+    void goToHomePage(String name, int numUsers) {
+
+        Intent intent = new Intent(this, ChatListActivity.class);
+        intent.putExtra("username", name);
+        intent.putExtra("numUsers", numUsers);
+        startActivity(intent);
+        finish();
+    }
 
 
     @Override
@@ -180,6 +191,7 @@ public class LoginActivity extends Activity {
         super.onBackPressed();
         exitApp();
     }
+
     void exitApp() {
         Intent startMain = new Intent(Intent.ACTION_MAIN);
         startMain.addCategory(Intent.CATEGORY_HOME);
