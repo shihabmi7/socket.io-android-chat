@@ -60,7 +60,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
         public void setUsername(String username) {
             if (null == mUsernameView) return;
             mUsernameView.setText(username);
-            mUsernameView.setTextColor(getUsernameColor(username));
+            //mUsernameView.setTextColor(getUsernameColor(username));
         }
 
         public void setMessage(String message) {

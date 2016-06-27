@@ -7,11 +7,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -37,6 +43,7 @@ public class ChatWindowActivity extends AppCompatActivity {
     private boolean mTyping = false;
     private Handler mTypingHandler = new Handler();
     private String mUsername;
+    private String mUserEmail;
     private Socket mSocket;
     private String mUserID;
 
@@ -44,15 +51,15 @@ public class ChatWindowActivity extends AppCompatActivity {
     private RecyclerView mUserListView;
     ArrayList<User> mUserList = new ArrayList<User>();
     User mReceiveUser;
-    Button mLogOutButton;
     private PrefsValues prefsValues;
+    Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_chat_window);
+        setContentView(R.layout.activity_personal_chat_window);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         //toolbar.setTitle("Job Town Chat");
         setSupportActionBar(toolbar);
 
@@ -60,11 +67,45 @@ public class ChatWindowActivity extends AppCompatActivity {
         //toolbar.setLogo(R.drawable.ic_launcher);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        prefsValues = new PrefsValues(getApplicationContext(), "chat_me", 0);
+        mUsername = prefsValues.getUserName();
 
+        Log.e("UserName", " UserName" + prefsValues.getUserName());
         connetSocketAndListener();
         initiateUI();
 
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //connetSocketAndListener();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        //mSocket.off(Socket.EVENT_CONNECT, onConnect);
+        //mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
+        //mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
+        //mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        //mSocket.off("new message", onNewMessage);
+        //mSocket.off("user joined", onUserJoined);
+        // mSocket.off("user left", onUserLeft);
+        //mSocket.off("typing", onTyping);
+        //mSocket.off("stop typing", onStopTyping);
+        //mSocket.off("say to someone", onSayToSomeone);
+        // mSocket.off("user_registration", user_registration);
+       // mSocket.off("get_Offline_Message", getOfflineMessage);
+       // mSocket.disconnect();
+    }
+
 
     private void scrollToBottom() {
         mMessagesView.scrollToPosition(mAdapter.getItemCount() - 1);
@@ -84,16 +125,6 @@ public class ChatWindowActivity extends AppCompatActivity {
         scrollToBottom();
     }
 
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        mAdapter = new MessageAdapter(this, mMessages);
-        mMessagesView.setAdapter(mAdapter);
-
-    }
-
     public void connetSocketAndListener() {
 
         ChatApplication app = (ChatApplication) getApplication();
@@ -110,71 +141,111 @@ public class ChatWindowActivity extends AppCompatActivity {
         mSocket.on("say to someone", onSayToSomeone);
         //mSocket.on("user_registration", user_registration);
         mSocket.on("get_Offline_Message", getOfflineMessage);
-
         mSocket.connect();
 
     }
-
 
     private void UserRegistration() {
 
         mSocket.emit("user_registration", mUsername, mUsername + "@gmail.com");
 
+
     }
-
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        mSocket.disconnect();
-
-        mSocket.off(Socket.EVENT_CONNECT, onConnect);
-        mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
-        mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
-        mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
-        mSocket.off("new message", onNewMessage);
-        //mSocket.off("user joined", onUserJoined);
-        // mSocket.off("user left", onUserLeft);
-        mSocket.on("typing", onTyping);
-        mSocket.on("stop typing", onStopTyping);
-        mSocket.off("say to someone", onSayToSomeone);
-        // mSocket.off("user_registration", user_registration);
-        mSocket.off("get_Offline_Message", getOfflineMessage);
-    }
-
 
     public void initiateUI() {
 
-        // shihab
+        mReceiveUser = new User();
 
-        mUsername = getIntent().getStringExtra("username");
-        // addLog(getResources().getString(R.string.message_welcome));
-        // addParticipantsLog(numUsers);
-        //UserRegistration();
+        mReceiveUser.setEmail(getIntent().getStringExtra("email"));
+        mReceiveUser.setUserName(getIntent().getStringExtra("reciever_name"));
+
+        Log.e("Private Chat with ", "" + getIntent().getStringExtra("email") + " : " + getIntent().getStringExtra("reciever_name"));
+        //toolbar.setTitle(mReceiveUser.getUserName());
+        getSupportActionBar().setTitle(mReceiveUser.getUserName());
 
 
-        prefsValues = new PrefsValues(getApplicationContext(), "chat_me", 0);
-
-        mMessagesView = (RecyclerView) findViewById(R.id.userList);
+        mMessagesView = (RecyclerView) findViewById(R.id.messageRecycleView);
         mMessagesView.setLayoutManager(new LinearLayoutManager(this));
+        mAdapter = new MessageAdapter(this, mMessages);
+        mMessagesView.setAdapter(mAdapter);
 
 
-        /*mMessagesView.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), mMessagesView, new MainFragment.ClickListener() {
+        mInputMessageView = (EditText) findViewById(R.id.message_input);
+        mInputMessageView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
-            public void onClick(View view, int position) {
+            public boolean onEditorAction(TextView v, int id, KeyEvent event) {
+                if (id == R.id.send || id == EditorInfo.IME_NULL) {
+                    //attemptSend();
 
-                mReceiveUser = mUserList.get(position);
-                Toast.makeText(getApplicationContext(), mReceiveUser.getUserName() + " is selected!", Toast.LENGTH_SHORT).show();
-
+                    sendToSpecificPeople();
+                    return true;
+                }
+                return false;
+            }
+        });
+        mInputMessageView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 
             @Override
-            public void onLongClick(View view, int position) {
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (null == mUsername) return;
+                if (!mSocket.connected()) return;
 
+                if (!mTyping) {
+                    mTyping = true;
+                    mSocket.emit("typing");
+                }
+
+                mTypingHandler.removeCallbacks(onTypingTimeout);
+                mTypingHandler.postDelayed(onTypingTimeout, TYPING_TIMER_LENGTH);
             }
-        }));
-*/
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        ImageButton sendButton = (ImageButton) findViewById(R.id.send_button);
+        sendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //attemptSend();
+                sendToSpecificPeople();
+            }
+        });
+    }
+
+    private void sendToSpecificPeople() {
+
+        if (!mSocket.connected())
+            return;
+
+        mTyping = false;
+
+        String message = mInputMessageView.getText().toString().trim();
+        if (TextUtils.isEmpty(message)) {
+            mInputMessageView.requestFocus();
+            return;
+        }
+
+        // perform the sending message attempt.
+        if (mReceiveUser != null) {
+
+            mInputMessageView.setText("");
+            addMessage("me: " + mUsername, message);
+
+            mSocket.emit("say to someone", mReceiveUser.getUserName(), mReceiveUser.getSocket_id(), mReceiveUser.getEmail(), message);
+            Log.e("send msg", "From User Id: " + mUsername + " To:  " + mReceiveUser.getEmail() + "  " + message);
+
+        } else {
+
+            Toast.makeText(this, "please select a user", Toast.LENGTH_SHORT).show();
+            mInputMessageView.setText("");
+            //addMessage(mUsername, message);
+        }
+
     }
 
     @Override
@@ -246,8 +317,6 @@ public class ChatWindowActivity extends AppCompatActivity {
                     } catch (Exception e) {
 
                     }
-
-
                 }
             });
         }
@@ -304,55 +373,7 @@ public class ChatWindowActivity extends AppCompatActivity {
         }
     };
 
-    private Emitter.Listener onUserJoined = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    JSONObject data = (JSONObject) args[0];
-                    String username;
-                    int numUsers;
-                    try {
 
-                        Log.e("on User Joined", "" + data.toString());
-                        username = data.getString("username");
-                        numUsers = data.getInt("numUsers");
-                        mUserID = data.getString("socket_id");
-                    } catch (JSONException e) {
-                        return;
-                    }
-
-                    //addLog(getResources().getString(R.string.message_user_joined, username));
-                    //(numUsers);
-                }
-            });
-        }
-    };
-
-    private Emitter.Listener onUserLeft = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    JSONObject data = (JSONObject) args[0];
-                    String username;
-                    int numUsers;
-                    try {
-                        username = data.getString("username");
-                        numUsers = data.getInt("numUsers");
-                    } catch (JSONException e) {
-                        return;
-                    }
-
-                    //addLog(getResources().getString(R.string.message_user_left, username));
-                    //addParticipantsLog(numUsers);
-                    //removeTyping(username);
-                }
-            });
-        }
-    };
 
     private Emitter.Listener onTyping = new Emitter.Listener() {
         @Override
@@ -391,7 +412,6 @@ public class ChatWindowActivity extends AppCompatActivity {
         }
     };
 
-
     private Emitter.Listener getOfflineMessage = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -410,18 +430,16 @@ public class ChatWindowActivity extends AppCompatActivity {
                         for (int i = 0; i < newArr.length(); i++) {
 
                             JSONObject jsonObject = newArr.getJSONObject(i);
-
                             String sender_name = jsonObject.getString("sender_mail");
-
                             addMessage(sender_name, jsonObject.getString("message"));
 
                         }
 
                     } catch (JSONException e) {
-                        Log.e("user_registration", "JSONException" + e.toString());
+                        Log.e("getOfflineMessage", "JSONException" + e.toString());
                         //return;
                     } catch (Exception e) {
-                        Log.e("user_registration", "Exception" + e.toString());
+                        Log.e("getOfflineMessage", "Exception" + e.toString());
                         //return;
                     }
 
@@ -459,58 +477,6 @@ public class ChatWindowActivity extends AppCompatActivity {
     };
 
 
-    private Emitter.Listener user_registration = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-
-                        mUserList.clear();
-
-                        JSONArray jsonArray = new JSONArray(args);
-
-                        String aa = jsonArray.getString(0).toString();
-                        Log.e("data:", aa);
-                        JSONArray newArr = new JSONArray(aa);
-//                        Log.e("email",newArr.getJSONObject(0).getString("email"));
-                        for (int i = 0; i < newArr.length(); i++) {
-
-                            JSONObject jsonObject = newArr.getJSONObject(i);
-
-                            User user = new User();
-                            String name = jsonObject.getString("user_name");
-                            user.setUserName(name);
-
-                            if (name.equalsIgnoreCase(mUsername)) {
-
-                                Log.e("user_matched", "I am " + mUsername);
-                                continue;
-
-                            }
-                            user.setEmail(jsonObject.getString("email"));
-                            user.setStatus("online");
-                            user.setSocket_id(jsonObject.getString("socket_id"));
-                            //user.setStatus(jsonObject.getString("status"));
-                            Log.e("email", jsonObject.getString("email"));
-                            mUserList.add(user);
-                        }
-                        mUsrAdapter.notifyDataSetChanged();
-
-                    } catch (JSONException e) {
-                        Log.e("user_registration", "JSONException" + e.toString());
-                        //return;
-                    } catch (Exception e) {
-                        Log.e("user_registration", "Exception" + e.toString());
-                        //return;
-                    }
-
-                }
-            });
-        }
-    };
-
     private void removeTyping(String username) {
         for (int i = mMessages.size() - 1; i >= 0; i--) {
             Message message = mMessages.get(i);
@@ -521,10 +487,28 @@ public class ChatWindowActivity extends AppCompatActivity {
         }
     }
 
+    private Runnable onTypingTimeout = new Runnable() {
+        @Override
+        public void run() {
+            if (!mTyping) return;
+
+            mTyping = false;
+            mSocket.emit("stop typing");
+        }
+    };
+
     public interface ClickListener {
         void onClick(View view, int position);
 
         void onLongClick(View view, int position);
     }
 
+    @Override
+    public void onBackPressed() {
+
+        super.onBackPressed();
+        //finish();
+
+        Log.e("onBackPressed","");
+    }
 }

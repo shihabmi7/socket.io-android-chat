@@ -37,6 +37,7 @@ public class LoginActivity extends Activity {
     private Socket mSocket;
     PrefsValues prefsValues;
     ChatApplication app;
+    private Boolean isConnected = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,8 +98,12 @@ public class LoginActivity extends Activity {
         super.onResume();
 
         mSocket = app.getSocket();
+        mSocket.on(Socket.EVENT_CONNECT, onConnect);
+        mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
+        mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
+        mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
         mSocket.on("login", onLogin);
-
+        mSocket.connect();
         Log.e("onResume", "onResume");
     }
 
@@ -121,7 +126,7 @@ public class LoginActivity extends Activity {
      * If there are form errors (invalid username, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    private void attemptLogin() {
+    public void attemptLogin() {
         // Reset errors.
         mUsernameView.setError(null);
 
@@ -138,6 +143,8 @@ public class LoginActivity extends Activity {
         }
 
         mUsername = username;
+
+        ApplicationData.mUserName =username;
 
         // set user name to preference
 
@@ -200,6 +207,65 @@ public class LoginActivity extends Activity {
         System.exit(0);
         android.os.Process.killProcess(android.os.Process.myPid());
     }
+
+    private Emitter.Listener onConnect = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    try {
+
+                        JSONObject data = (JSONObject) args[0];
+                        Log.e("onConnect", "" + data.toString());
+
+                        if (!isConnected) {
+                            if (null != mUsername)
+                                mSocket.emit("add user", mUsername);
+
+                            Toast.makeText(getApplicationContext(),
+                                    R.string.connect, Toast.LENGTH_LONG).show();
+
+                            isConnected = true;
+                        }
+
+                    } catch (Exception e) {
+
+                    }
+
+
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onDisconnect = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    isConnected = false;
+                    Toast.makeText(getApplicationContext(),
+                            R.string.disconnect, Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onConnectError = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(),
+                            R.string.error_connect, Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    };
 
 }
 

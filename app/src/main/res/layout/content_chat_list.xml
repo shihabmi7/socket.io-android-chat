@@ -22,7 +22,6 @@
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:scrollbarStyle="outsideOverlay"
-        android:layout_below="@+id/button"
         android:scrollbars="vertical" />
 
 </RelativeLayout>

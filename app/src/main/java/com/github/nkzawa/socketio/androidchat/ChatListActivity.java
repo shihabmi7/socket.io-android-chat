@@ -33,7 +33,7 @@ public class ChatListActivity extends AppCompatActivity {
     private RecyclerView mMessagesView;
     private EditText mInputMessageView;
     private List<Message> mMessages = new ArrayList<Message>();
-    private RecyclerView.Adapter  mUsrAdapter;
+    private RecyclerView.Adapter mUsrAdapter;
     private boolean mTyping = false;
     private Handler mTypingHandler = new Handler();
     private String mUsername;
@@ -57,58 +57,42 @@ public class ChatListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayShowTitleEnabled(true);
+
         //toolbar.setLogo(R.drawable.ic_launcher);
         //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
 
         connetSocketAndListener();
         initiateUI();
 
+        Log.e(" onCreate", "ChatListActivity Called : " );
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.e(" onStart ", "ChatListActivity Called : " );
+        UserRegistration();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Log.e(" onResume ", "ChatListActivity Called : " );
 
-        //
-        mUsrAdapter = new UserListAdapter(this, mUserList);
-        mUserListView.setAdapter(mUsrAdapter);
-
-    }
-
-    public void connetSocketAndListener() {
-
-        ChatApplication app = (ChatApplication) getApplication();
-        mSocket = app.getSocket();
-        mSocket.on(Socket.EVENT_CONNECT, onConnect);
-        mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
-        mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
-        mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
-        mSocket.on("new message", onNewMessage);
-        mSocket.on("user joined", onUserJoined);
-        mSocket.on("user left", onUserLeft);
-
-        mSocket.on("user_registration", user_registration);
-        mSocket.on("get_Offline_Message", getOfflineMessage);
-
-        mSocket.connect();
+        //connetSocketAndListener();
 
     }
+    @Override
+    protected void onPause() {
 
-
-
-
-    private void UserRegistration() {
-
-        mSocket.emit("user_registration", mUsername, mUsername + "@gmail.com");
-
+        super.onPause(); Log.e(" onPause ", "ChatListActivity Called : " );
     }
-
 
     @Override
     public void onDestroy() {
         super.onDestroy();
 
+        Log.e(" onDestroy ", "ChatListActivity Called : " );
         mSocket.disconnect();
 
         mSocket.off(Socket.EVENT_CONNECT, onConnect);
@@ -123,24 +107,52 @@ public class ChatListActivity extends AppCompatActivity {
         mSocket.off("get_Offline_Message", getOfflineMessage);
     }
 
+    public void connetSocketAndListener() {
+
+        ChatApplication app = (ChatApplication) getApplication();
+        mSocket = app.getSocket();
+
+        mSocket.on(Socket.EVENT_CONNECT, onConnect);
+        mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
+        mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
+        mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        mSocket.on("new message", onNewMessage);
+        mSocket.on("user joined", onUserJoined);
+        mSocket.on("user left", onUserLeft);
+        mSocket.on("user_registration", user_registration);
+        mSocket.on("getOfflineMessage", getOfflineMessage);
+
+        mSocket.connect();
+
+    }
+
+    private void UserRegistration() {
+
+        mSocket.emit("user_registration", mUsername, mUsername + "@gmail.com");
+        Log.e("user_registration", "Called : " + mUsername);
+    }
+
 
     public void initiateUI() {
 
         // shihab
 
-        mUsername = getIntent().getStringExtra("username");
-        int numUsers = getIntent().getIntExtra("numUsers", 1);
+        //int numUsers = getIntent().getIntExtra("numUsers", 1);
 
         // addLog(getResources().getString(R.string.message_welcome));
         // addParticipantsLog(numUsers);
-        UserRegistration();
 
 
         prefsValues = new PrefsValues(getApplicationContext(), "chat_me", 0);
 
+        mUsername = prefsValues.getUserName();
+
+        getSupportActionBar().setTitle(" I am "+mUsername);
+
         mUserListView = (RecyclerView) findViewById(R.id.userList);
         mUserListView.setLayoutManager(new LinearLayoutManager(this));
-
+        mUsrAdapter = new UserListAdapter(this, mUserList);
+        mUserListView.setAdapter(mUsrAdapter);
 
         mUserListView.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), mMessagesView, new MainFragment.ClickListener() {
             @Override
@@ -149,7 +161,7 @@ public class ChatListActivity extends AppCompatActivity {
                 mReceiveUser = mUserList.get(position);
                 Toast.makeText(getApplicationContext(), mReceiveUser.getUserName() + " is selected!", Toast.LENGTH_SHORT).show();
 
-                goToPrivateChatwindow(mReceiveUser.getUserName());
+                goToPrivateChatwindow(mReceiveUser.getUserName(), mReceiveUser.getEmail());
             }
 
             @Override
@@ -159,13 +171,15 @@ public class ChatListActivity extends AppCompatActivity {
         }));
 
     }
-    void goToPrivateChatwindow(String name) {
+
+    void goToPrivateChatwindow(String name, String email) {
 
         Intent intent = new Intent(this, ChatWindowActivity.class);
-        intent.putExtra("username", name);
+        intent.putExtra("reciever_name", name);
+        intent.putExtra("email", email);
 
         startActivity(intent);
-        finish();
+        //finish();
     }
 
     @Override
@@ -185,12 +199,12 @@ public class ChatListActivity extends AppCompatActivity {
     }
 
 
-    private void startSignIn() {
-
-        mUsername = null;
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivityForResult(intent, REQUEST_LOGIN);
-    }
+//    private void startSignIn() {
+//
+//        mUsername = null;
+//        Intent intent = new Intent(this, LoginActivity.class);
+//        startActivityForResult(intent, REQUEST_LOGIN);
+//    }
 
     private void logOut() {
 
@@ -208,7 +222,7 @@ public class ChatListActivity extends AppCompatActivity {
         mUsername = null;
         mSocket.disconnect();
         mSocket.connect();
-        startSignIn();
+        //startSignIn();
     }
 
 
@@ -288,7 +302,7 @@ public class ChatListActivity extends AppCompatActivity {
                     }
 
                     //removeTyping(username);
-                   // addMessage(username, message);
+                    // addMessage(username, message);
                 }
             });
 
@@ -306,7 +320,7 @@ public class ChatListActivity extends AppCompatActivity {
                     int numUsers;
                     try {
 
-                        Log.e("on User Joined", "" + data.toString());
+                        Log.i("on User Joined", "" + data.toString());
                         username = data.getString("username");
                         numUsers = data.getInt("numUsers");
                         mUserID = data.getString("socket_id");
@@ -355,7 +369,6 @@ public class ChatListActivity extends AppCompatActivity {
 
                     try {
                         JSONArray jsonArray = new JSONArray(args);
-
 
                         String aa = jsonArray.getString(0).toString();
                         Log.e("getOfflineMessage:", aa);
@@ -408,18 +421,21 @@ public class ChatListActivity extends AppCompatActivity {
                             User user = new User();
                             String name = jsonObject.getString("user_name");
                             user.setUserName(name);
-
                             if (name.equalsIgnoreCase(mUsername)) {
 
-                                Log.e("user_matched", "I am " + mUsername);
+                                Log.i("user_matched", "I am " + mUsername);
                                 continue;
 
                             }
                             user.setEmail(jsonObject.getString("email"));
-                            user.setStatus("online");
                             user.setSocket_id(jsonObject.getString("socket_id"));
                             //user.setStatus(jsonObject.getString("status"));
-                            Log.e("email", jsonObject.getString("email"));
+                            if (jsonObject.getString("status") == "1") {
+                                user.setStatus("online");
+                            } else
+                                user.setStatus("offline");
+
+                            Log.i("email", jsonObject.getString("email"));
                             mUserList.add(user);
                         }
                         mUsrAdapter.notifyDataSetChanged();
