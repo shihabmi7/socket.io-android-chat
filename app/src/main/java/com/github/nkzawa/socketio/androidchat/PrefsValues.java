@@ -19,7 +19,7 @@ public class PrefsValues {
     Activity activity;
 
     public String getUserName() {
-        return mPrefs.getString(userName, "");
+        return mPrefs.getString(this.userName, "");
     }
 
     public void setUserName(String userName) {

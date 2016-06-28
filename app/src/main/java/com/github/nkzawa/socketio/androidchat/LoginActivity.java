@@ -1,11 +1,9 @@
 package com.github.nkzawa.socketio.androidchat;
 
 import android.app.Activity;
-import android.content.Context;
+import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -17,12 +15,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import io.socket.client.Socket;
-import io.socket.client.SocketIOException;
-import io.socket.emitter.Emitter;
-
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 
 
 /**
@@ -38,6 +35,7 @@ public class LoginActivity extends Activity {
     PrefsValues prefsValues;
     ChatApplication app;
     private Boolean isConnected = true;
+    ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +43,10 @@ public class LoginActivity extends Activity {
         setContentView(R.layout.activity_login);
 
         try {
+            progressDialog = new ProgressDialog(this);
+            progressDialog.setMessage(getString(R.string.loading_message));
+            progressDialog.setTitle(getString(R.string.waiting));
+            progressDialog.setCancelable(true);
 
             prefsValues = new PrefsValues(getApplicationContext(), "chat_me", 0);
 
@@ -58,7 +60,7 @@ public class LoginActivity extends Activity {
                 @Override
                 public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                     if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                        attemptLogin();
+                        attemptLogin(mUsernameView.getText().toString().trim());
                         return true;
                     }
                     return false;
@@ -69,25 +71,17 @@ public class LoginActivity extends Activity {
             signInButton.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    attemptLogin();
+                    attemptLogin(mUsernameView.getText().toString().trim());
                 }
             });
 
             //mSocket.on("login", onLogin);
 
-            String name = prefsValues.getUserName();
-
-            if (!name.isEmpty()) {
-
-                oldUserLogin(prefsValues.getUserName());
-
-                Toast.makeText(getApplicationContext(), "Successfully Logged in", Toast.LENGTH_LONG);
-            }
 
         } catch (Exception e) {
 
-            Toast.makeText(getApplicationContext(), "Error" + e.toString(), Toast.LENGTH_LONG);
-
+            Toast.makeText(getApplicationContext(), "Error" + e.toString(), Toast.LENGTH_LONG).show();
+            DebugLog.log("LOg In : " + e.toString());
         }
 
 
@@ -105,6 +99,18 @@ public class LoginActivity extends Activity {
         mSocket.on("login", onLogin);
         mSocket.connect();
         Log.e("onResume", "onResume");
+
+        String name = getSharedPreferences("chat_me", 0).getString("user_name", "");
+
+        if (!name.isEmpty()) {
+
+            //oldUserLogin(prefsValues.getUserName());
+            attemptLogin(prefsValues.getUserName());
+
+            Toast.makeText(getApplicationContext(), "Successfully Logged in", Toast.LENGTH_LONG).show();
+
+        } else
+            Toast.makeText(getApplicationContext(), "Give a name", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -126,12 +132,15 @@ public class LoginActivity extends Activity {
      * If there are form errors (invalid username, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    public void attemptLogin() {
+    public void attemptLogin(String mUsername) {
+
+        progressDialog.show();
         // Reset errors.
         mUsernameView.setError(null);
 
         // Store values at the time of the login attempt.
-        String username = mUsernameView.getText().toString().trim();
+        //String username = mUsernameView.getText().toString().trim();
+        String username = mUsername;
 
         // Check for a valid username.
         if (TextUtils.isEmpty(username)) {
@@ -144,7 +153,7 @@ public class LoginActivity extends Activity {
 
         mUsername = username;
 
-        ApplicationData.mUserName =username;
+        ApplicationData.mUserName = username;
 
         // set user name to preference
 
@@ -174,12 +183,9 @@ public class LoginActivity extends Activity {
                 return;
             }
 
-//            Intent intent = new Intent();
-//            intent.putExtra("username", mUsername);
-//            intent.putExtra("numUsers", numUsers);
-//            setResult(RESULT_OK, intent);
-//            finish();
             goToHomePage(mUsername, numUsers);
+            progressDialog.dismiss();
+
         }
     };
 
@@ -247,6 +253,7 @@ public class LoginActivity extends Activity {
                 @Override
                 public void run() {
                     isConnected = false;
+                    progressDialog.dismiss();
                     Toast.makeText(getApplicationContext(),
                             R.string.disconnect, Toast.LENGTH_LONG).show();
                 }
@@ -260,6 +267,7 @@ public class LoginActivity extends Activity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    progressDialog.dismiss();
                     Toast.makeText(getApplicationContext(),
                             R.string.error_connect, Toast.LENGTH_LONG).show();
                 }

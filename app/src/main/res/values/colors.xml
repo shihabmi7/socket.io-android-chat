@@ -13,5 +13,13 @@
     <color name="username9">#3824aa</color>
     <color name="username10">#a700ff</color>
     <color name="username11">#d300e7</color>
+    <color name="colorPrimary">#539E2A</color>
+    <color name="colorPrimaryDark">#388e3c</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="black_overlay">#66000000</color>
+
+    <color name="fb_blue">#3b5998</color>
+    <color name="yellow">#FFE013</color>
+
 
 </resources>

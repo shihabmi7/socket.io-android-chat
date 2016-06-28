@@ -1,5 +1,6 @@
 package com.github.nkzawa.socketio.androidchat;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,7 +13,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,7 +37,7 @@ public class ChatListActivity extends AppCompatActivity {
     private RecyclerView mMessagesView;
     private EditText mInputMessageView;
     private List<Message> mMessages = new ArrayList<Message>();
-    private RecyclerView.Adapter mUsrAdapter;
+    private RecyclerView.Adapter mUserAdapter;
     private boolean mTyping = false;
     private Handler mTypingHandler = new Handler();
     private String mUsername;
@@ -46,6 +50,7 @@ public class ChatListActivity extends AppCompatActivity {
     User mReceiveUser;
     Button mLogOutButton;
     private PrefsValues prefsValues;
+    ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,38 +69,44 @@ public class ChatListActivity extends AppCompatActivity {
         connetSocketAndListener();
         initiateUI();
 
-        Log.e(" onCreate", "ChatListActivity Called : " );
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage(getString(R.string.loading_message));
+        progressDialog.setTitle(getString(R.string.waiting));
+        progressDialog.setCancelable(true);
+
+        Log.e(" onCreate", "ChatListActivity Called : ");
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Log.e(" onStart ", "ChatListActivity Called : " );
+        Log.e(" onStart ", "ChatListActivity Called : ");
         UserRegistration();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.e(" onResume ", "ChatListActivity Called : " );
+        Log.e(" onResume ", "ChatListActivity Called : ");
 
         //connetSocketAndListener();
 
     }
+
     @Override
     protected void onPause() {
 
-        super.onPause(); Log.e(" onPause ", "ChatListActivity Called : " );
+        super.onPause();
+        Log.e(" onPause ", "ChatListActivity Called : ");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.e(" onDestroy ", "ChatListActivity Called : ");
+        //mSocket.disconnect();
 
-        Log.e(" onDestroy ", "ChatListActivity Called : " );
-        mSocket.disconnect();
-
-        mSocket.off(Socket.EVENT_CONNECT, onConnect);
+       /* mSocket.off(Socket.EVENT_CONNECT, onConnect);
         mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
         mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
         mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
@@ -104,7 +115,7 @@ public class ChatListActivity extends AppCompatActivity {
         mSocket.off("user left", onUserLeft);
         // mSocket.off("say to someone", onSayToSomeone);
         mSocket.off("user_registration", user_registration);
-        mSocket.off("get_Offline_Message", getOfflineMessage);
+        mSocket.off("get_Offline_Message", getOfflineMessage);*/
     }
 
     public void connetSocketAndListener() {
@@ -128,6 +139,7 @@ public class ChatListActivity extends AppCompatActivity {
 
     private void UserRegistration() {
 
+        progressDialog.show();
         mSocket.emit("user_registration", mUsername, mUsername + "@gmail.com");
         Log.e("user_registration", "Called : " + mUsername);
     }
@@ -137,24 +149,20 @@ public class ChatListActivity extends AppCompatActivity {
 
         // shihab
 
-        //int numUsers = getIntent().getIntExtra("numUsers", 1);
-
-        // addLog(getResources().getString(R.string.message_welcome));
-        // addParticipantsLog(numUsers);
-
 
         prefsValues = new PrefsValues(getApplicationContext(), "chat_me", 0);
 
         mUsername = prefsValues.getUserName();
 
-        getSupportActionBar().setTitle(" I am "+mUsername);
+        getSupportActionBar().setTitle(" I am " + mUsername);
 
         mUserListView = (RecyclerView) findViewById(R.id.userList);
         mUserListView.setLayoutManager(new LinearLayoutManager(this));
-        mUsrAdapter = new UserListAdapter(this, mUserList);
-        mUserListView.setAdapter(mUsrAdapter);
+        mUserAdapter = new UserListAdapter(this, mUserList);
+        mUserListView.setAdapter(mUserAdapter);
 
-        mUserListView.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), mMessagesView, new MainFragment.ClickListener() {
+        mUserListView.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(),
+                mMessagesView, new MainFragment.ClickListener() {
             @Override
             public void onClick(View view, int position) {
 
@@ -171,6 +179,7 @@ public class ChatListActivity extends AppCompatActivity {
         }));
 
     }
+
 
     void goToPrivateChatwindow(String name, String email) {
 
@@ -235,8 +244,8 @@ public class ChatListActivity extends AppCompatActivity {
 
                     try {
 
-                        JSONObject data = (JSONObject) args[0];
-                        Log.e("onConnect", "" + data.toString());
+                        //JSONObject data = (JSONObject) args[0];
+                        Log.e("onConnect", "" + args.toString());
 
                         if (!isConnected) {
                             if (null != mUsername)
@@ -260,10 +269,12 @@ public class ChatListActivity extends AppCompatActivity {
 
     private Emitter.Listener onDisconnect = new Emitter.Listener() {
         @Override
-        public void call(Object... args) {
+        public void call(final Object... args) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    //JSONObject data = (JSONObject) args[0];
+                    Log.i("on Disconnect", "" + args.toString());
                     isConnected = false;
                     Toast.makeText(getApplicationContext(),
                             R.string.disconnect, Toast.LENGTH_LONG).show();
@@ -274,10 +285,12 @@ public class ChatListActivity extends AppCompatActivity {
 
     private Emitter.Listener onConnectError = new Emitter.Listener() {
         @Override
-        public void call(Object... args) {
+        public void call(final Object... args) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    //JSONObject data = (JSONObject) args[0];
+                    Log.i("on Connect Error", "" + args.toString());
                     Toast.makeText(getApplicationContext(),
                             R.string.error_connect, Toast.LENGTH_LONG).show();
                 }
@@ -291,13 +304,14 @@ public class ChatListActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    JSONObject data = (JSONObject) args[0];
+                    //JSONObject data = (JSONObject) args[0];
                     String username;
                     String message;
+                    Log.i("on New Message", "" + args.toString());
                     try {
-                        username = data.getString("username");
-                        message = data.getString("message");
-                    } catch (JSONException e) {
+                        //username = data.getString("username");
+                        //message = data.getString("message");
+                    } catch (Exception e) {
                         return;
                     }
 
@@ -323,7 +337,7 @@ public class ChatListActivity extends AppCompatActivity {
                         Log.i("on User Joined", "" + data.toString());
                         username = data.getString("username");
                         numUsers = data.getInt("numUsers");
-                        mUserID = data.getString("socket_id");
+
                     } catch (JSONException e) {
                         return;
                     }
@@ -345,6 +359,8 @@ public class ChatListActivity extends AppCompatActivity {
                     String username;
                     int numUsers;
                     try {
+
+                        Log.i("on User Left", "" + data.toString());
                         username = data.getString("username");
                         numUsers = data.getInt("numUsers");
                     } catch (JSONException e) {
@@ -368,16 +384,16 @@ public class ChatListActivity extends AppCompatActivity {
                 public void run() {
 
                     try {
-                        JSONArray jsonArray = new JSONArray(args);
+                        /*JSONArray jsonArray = new JSONArray(args);
 
                         String aa = jsonArray.getString(0).toString();
-                        Log.e("getOfflineMessage:", aa);
-                        JSONArray newArr = new JSONArray(aa);
+                        Log.i("get Offline Message:", aa);*/
+
+                        JSONArray newArr = new JSONArray(args.toString());
 //                        Log.e("email",newArr.getJSONObject(0).getString("email"));
                         for (int i = 0; i < newArr.length(); i++) {
 
                             JSONObject jsonObject = newArr.getJSONObject(i);
-
                             String sender_name = jsonObject.getString("sender_mail");
 
                             //addMessage(sender_name, jsonObject.getString("message"));
@@ -385,13 +401,12 @@ public class ChatListActivity extends AppCompatActivity {
                         }
 
                     } catch (JSONException e) {
-                        Log.e("user_registration", "JSONException" + e.toString());
+                        Log.e("getOfflineMessage", "JSONException" + e.toString());
                         //return;
                     } catch (Exception e) {
-                        Log.e("user_registration", "Exception" + e.toString());
+                        Log.e("getOfflineMessage", "Exception" + e.toString());
                         //return;
                     }
-
 
                 }
             });
@@ -406,39 +421,59 @@ public class ChatListActivity extends AppCompatActivity {
                 public void run() {
                     try {
 
+//                        JSONObject jObj = args.;
+
                         mUserList.clear();
 
-                        JSONArray jsonArray = new JSONArray(args);
+                        Gson gson = new Gson();
+                        String json = gson.toJson(args);
 
-                        String aa = jsonArray.getString(0).toString();
-                        Log.e("data:", aa);
-                        JSONArray newArr = new JSONArray(aa);
+                        JSONArray test = new JSONArray(json);
+                        Log.i("user registration", json);
+
+                        //JSONArray jsonArray = new JSONArray(args);
+                        //String aa = jsonArray.getString(0).toString();
+                        //String aa = jsonArray.getString(0).toString();
+                        // Log.i("user registration", aa);
+                        String aa = test.getString(0).toString();
+                        JSONObject jsonObject = test.getJSONObject(0);
+                        JSONArray valueArrays = jsonObject.getJSONArray("values");
+
 //                        Log.e("email",newArr.getJSONObject(0).getString("email"));
-                        for (int i = 0; i < newArr.length(); i++) {
+                        for (int i = 0; i < valueArrays.length(); i++) {
 
-                            JSONObject jsonObject = newArr.getJSONObject(i);
+                            JSONObject jo = valueArrays.getJSONObject(i);
 
-                            User user = new User();
-                            String name = jsonObject.getString("user_name");
-                            user.setUserName(name);
+                            String nvp = jo.getString("nameValuePairs");
+
+                            jo = new JSONObject(nvp);
+
+
+                            String name = jo.getString("user_name");
+
                             if (name.equalsIgnoreCase(mUsername)) {
 
                                 Log.i("user_matched", "I am " + mUsername);
                                 continue;
-
                             }
-                            user.setEmail(jsonObject.getString("email"));
-                            user.setSocket_id(jsonObject.getString("socket_id"));
-                            //user.setStatus(jsonObject.getString("status"));
-                            if (jsonObject.getString("status") == "1") {
-                                user.setStatus("online");
-                            } else
-                                user.setStatus("offline");
 
-                            Log.i("email", jsonObject.getString("email"));
+                            User user = new User();
+                            user.setUserName(name);
+                            user.setEmail(jo.getString("email"));
+                            user.setSocket_id(jo.getString("socket_id"));
+                            user.setLastSeen(jo.getString("last_seen"));
+
+                            if (jo.getString("status").equalsIgnoreCase("1")) {
+                                user.setStatus("online");
+                            } else {
+                                user.setStatus("offline");
+                            }
+
                             mUserList.add(user);
+
                         }
-                        mUsrAdapter.notifyDataSetChanged();
+                        mUserAdapter.notifyDataSetChanged();
+                        progressDialog.dismiss();
 
                     } catch (JSONException e) {
                         Log.e("user_registration", "JSONException" + e.toString());
@@ -453,6 +488,20 @@ public class ChatListActivity extends AppCompatActivity {
         }
     };
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        exitApp();
+    }
+
+    void exitApp() {
+        Intent startMain = new Intent(Intent.ACTION_MAIN);
+        startMain.addCategory(Intent.CATEGORY_HOME);
+        startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(startMain);
+        System.exit(0);
+        android.os.Process.killProcess(android.os.Process.myPid());
+    }
 
     public interface ClickListener {
         void onClick(View view, int position);
