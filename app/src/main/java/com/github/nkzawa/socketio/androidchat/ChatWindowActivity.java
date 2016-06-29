@@ -33,7 +33,7 @@ import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
 
-public class ChatWindowActivity extends AppCompatActivity {
+public class ChatWindowActivity extends BaseActivity {
 
     private static final int REQUEST_LOGIN = 0;
     private static final int TYPING_TIMER_LENGTH = 600;
@@ -44,20 +44,20 @@ public class ChatWindowActivity extends AppCompatActivity {
     private RecyclerView.Adapter mAdapter, mUsrAdapter;
     private boolean mTyping = false;
     private Handler mTypingHandler = new Handler();
-    private String mUsername;
+    //private String mUsername;
     private String mUserEmail;
-    private Socket mSocket;
+    //private Socket mSocket;
     private String mUserID;
 
     private Boolean isConnected = true;
     private RecyclerView mUserListView;
     ArrayList<User> mUserList = new ArrayList<User>();
     User mReceiveUser;
-    private PrefsValues prefsValues;
+    //private PrefsValues prefsValues;
     Toolbar toolbar;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_personal_chat_window);
 
@@ -129,8 +129,8 @@ public class ChatWindowActivity extends AppCompatActivity {
 
     public void connetSocketAndListener() {
 
-        ChatApplication app = (ChatApplication) getApplication();
-        mSocket = app.getSocket();
+//        ChatApplication app = (ChatApplication) getApplication();
+//        mSocket = app.getSocket();
 //        mSocket.on(Socket.EVENT_CONNECT, onConnect);
 //        mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
 //        mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
@@ -147,12 +147,6 @@ public class ChatWindowActivity extends AppCompatActivity {
 
     }
 
-    private void UserRegistration() {
-
-        mSocket.emit("user_registration", mUsername, mUsername + "@gmail.com");
-
-
-    }
 
     public void initiateUI() {
 
@@ -250,45 +244,25 @@ public class ChatWindowActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_logout) {
-            logOut();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
 
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    private void startSignIn() {
-
-        mUsername = null;
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivity(intent);
-
-    }
-
-    private void logOut() {
-
-        prefsValues.clear();
-        //mSocket.disconnect();
-        //mSocket.connect();
-        startSignIn();
-        this.finish();
-
-    }
+//    private void startSignIn() {
+//
+//        mUsername = null;
+//        Intent intent = new Intent(this, LoginActivity.class);
+//        startActivity(intent);
+//
+//    }
+//
+//    private void logOut() {
+//
+//        prefsValues.clear();
+//        //mSocket.disconnect();
+//        //mSocket.connect();
+//        startSignIn();
+//        this.finish();
+//
+//    }
 
     private Emitter.Listener onConnect = new Emitter.Listener() {
         @Override
@@ -508,4 +482,26 @@ public class ChatWindowActivity extends AppCompatActivity {
 
         Log.e("onBackPressed", "");
     }
+
+    /* @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_logout) {
+            logOut();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }*/
 }
