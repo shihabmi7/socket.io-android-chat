@@ -331,7 +331,7 @@ public class MainFragment extends Fragment {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_leave) {
+        if (id == R.id.action_logout) {
             leave();
             return true;
         }
@@ -649,7 +649,7 @@ public class MainFragment extends Fragment {
 
                             }
                             user.setEmail(jsonObject.getString("email"));
-                            user.setStatus("online");
+                            //user.setStatus("online");
                             user.setSocket_id(jsonObject.getString("socket_id"));
                             //user.setStatus(jsonObject.getString("status"));
                             Log.e("email", jsonObject.getString("email"));

@@ -75,7 +75,7 @@ public class LoginActivity extends Activity {
                 }
             });
 
-            //mSocket.on("login", onLogin);
+            //mSocket.on("login", login_success);
 
 
         } catch (Exception e) {
@@ -91,22 +91,14 @@ public class LoginActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
-        mSocket = app.getSocket();
-        mSocket.on(Socket.EVENT_CONNECT, onConnect);
-        mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
-        mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
-        mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
-        mSocket.on("login", onLogin);
-        mSocket.connect();
-        Log.e("onResume", "onResume");
+        connetSocketAndListener();
+        Log.e("Log in onResume", "onResume");
 
         String name = getSharedPreferences("chat_me", 0).getString("user_name", "");
 
         if (!name.isEmpty()) {
-
             //oldUserLogin(prefsValues.getUserName());
             attemptLogin(prefsValues.getUserName());
-
             Toast.makeText(getApplicationContext(), "Successfully Logged in", Toast.LENGTH_LONG).show();
 
         } else
@@ -116,15 +108,15 @@ public class LoginActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        mSocket.off("login", onLogin);
-        Log.e("onPause", "onPause");
+        mSocket.off("login success", login_success);
+        Log.e("log in onPause", "onPause");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        mSocket.off("login", onLogin);
+        Log.e("log in onDestroy", "onDestroy");
+        mSocket.off("login success", login_success);
     }
 
     /**
@@ -134,6 +126,19 @@ public class LoginActivity extends Activity {
      */
     public void attemptLogin(String mUsername) {
 
+        if (mSocket.connected()) {
+
+            getConnected(mUsername);
+
+        } else {
+
+            connetSocketAndListener();
+            getConnected(mUsername);
+        }
+
+    }
+
+    void getConnected(String mUsername) {
         progressDialog.show();
         // Reset errors.
         mUsernameView.setError(null);
@@ -151,43 +156,21 @@ public class LoginActivity extends Activity {
             return;
         }
 
-        mUsername = username;
-
         ApplicationData.mUserName = username;
-
         // set user name to preference
-
-        prefsValues.setUserName(mUsername);
-
+        prefsValues.setUserName(username);
         // perform the user login attempt.
         mSocket.emit("add user", username + "@gmail.com");
     }
+
 
     private void oldUserLogin(String username) {
 
         mUsername = username;
-
         // perform the user login attempt.
         mSocket.emit("add user", username + "@gmail.com");
     }
 
-    private Emitter.Listener onLogin = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-            JSONObject data = (JSONObject) args[0];
-
-            int numUsers;
-            try {
-                numUsers = data.getInt("numUsers");
-            } catch (JSONException e) {
-                return;
-            }
-
-            goToHomePage(mUsername, numUsers);
-            progressDialog.dismiss();
-
-        }
-    };
 
     void goToHomePage(String name, int numUsers) {
 
@@ -195,9 +178,22 @@ public class LoginActivity extends Activity {
         intent.putExtra("username", name);
         intent.putExtra("numUsers", numUsers);
         startActivity(intent);
-        finish();
+        this.finish();
     }
 
+    public void connetSocketAndListener() {
+
+        ChatApplication app = (ChatApplication) getApplication();
+        mSocket = app.getSocket();
+        mSocket.on(Socket.EVENT_CONNECT, onConnect);
+        mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
+        mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
+        mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        mSocket.on("login success", login_success);
+
+        mSocket.connect();
+
+    }
 
     @Override
     public void onBackPressed() {
@@ -214,6 +210,25 @@ public class LoginActivity extends Activity {
         android.os.Process.killProcess(android.os.Process.myPid());
     }
 
+    private Emitter.Listener login_success = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data = (JSONObject) args[0];
+            Log.e("login_success->Log in", "" + args.toString());
+            int numUsers;
+            try {
+                numUsers = data.getInt("numUsers");
+            } catch (JSONException e) {
+                return;
+            }
+
+            goToHomePage(mUsername, numUsers);
+            progressDialog.dismiss();
+
+        }
+    };
+
+
     private Emitter.Listener onConnect = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -222,9 +237,8 @@ public class LoginActivity extends Activity {
                 public void run() {
 
                     try {
-
-                        JSONObject data = (JSONObject) args[0];
-                        Log.e("onConnect", "" + data.toString());
+                        //JSONObject data = (JSONObject) args[0];
+                        Log.e("onConnect->Log in", "" + args.toString());
 
                         if (!isConnected) {
                             if (null != mUsername)
@@ -248,10 +262,11 @@ public class LoginActivity extends Activity {
 
     private Emitter.Listener onDisconnect = new Emitter.Listener() {
         @Override
-        public void call(Object... args) {
+        public void call(final Object... args) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    Log.e("onDisconnect->Log in", "" + args[0].toString());
                     isConnected = false;
                     progressDialog.dismiss();
                     Toast.makeText(getApplicationContext(),
@@ -263,10 +278,11 @@ public class LoginActivity extends Activity {
 
     private Emitter.Listener onConnectError = new Emitter.Listener() {
         @Override
-        public void call(Object... args) {
+        public void call(final Object... args) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    Log.e("onConnectError->Log in", "" + args[0].toString());
                     progressDialog.dismiss();
                     Toast.makeText(getApplicationContext(),
                             R.string.error_connect, Toast.LENGTH_LONG).show();

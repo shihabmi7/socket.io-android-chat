@@ -37,7 +37,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
         User message = mMessages.get(position);
-        viewHolder.setMessage(message.getStatus());
+        //viewHolder.setMessage(message.getStatus());
         viewHolder.setUsername(message.getUserName());
     }
 

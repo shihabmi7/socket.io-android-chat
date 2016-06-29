@@ -8,7 +8,7 @@ public class User {
     private String userName;
     private String email;
     private String lastSeen;
-    private String status;
+    private boolean status;
     private String socket_id;
 
     public String getUserName() {
@@ -35,11 +35,11 @@ public class User {
         this.lastSeen = lastSeen;
     }
 
-    public String getStatus() {
+    public boolean getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Boolean status) {
         this.status = status;
     }
 

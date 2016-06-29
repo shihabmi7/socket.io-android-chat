@@ -12,6 +12,8 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -85,6 +87,13 @@ public class ChatWindowActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+
+        mSocket.off("say to someone", onSayToSomeone);
+        mSocket.off("new message", onNewMessage);
+        mSocket.off("typing", onTyping);
+        mSocket.off("stop typing", onStopTyping);
+        mSocket.off("get_Offline_Message", getOfflineMessage);
+
     }
 
     @Override
@@ -92,17 +101,10 @@ public class ChatWindowActivity extends AppCompatActivity {
         super.onDestroy();
 
         //mSocket.off(Socket.EVENT_CONNECT, onConnect);
-        //mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
-        //mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
-        //mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
-        //mSocket.off("new message", onNewMessage);
-        //mSocket.off("user joined", onUserJoined);
-        // mSocket.off("user left", onUserLeft);
-        //mSocket.off("typing", onTyping);
-        //mSocket.off("stop typing", onStopTyping);
-        //mSocket.off("say to someone", onSayToSomeone);
-        // mSocket.off("user_registration", user_registration);
-       // mSocket.off("get_Offline_Message", getOfflineMessage);
+       // mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
+      //  mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
+       // mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+
        // mSocket.disconnect();
     }
 
@@ -129,10 +131,10 @@ public class ChatWindowActivity extends AppCompatActivity {
 
         ChatApplication app = (ChatApplication) getApplication();
         mSocket = app.getSocket();
-        mSocket.on(Socket.EVENT_CONNECT, onConnect);
-        mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
-        mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
-        mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+//        mSocket.on(Socket.EVENT_CONNECT, onConnect);
+//        mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
+//        mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
+//        mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
         // mSocket.on("user joined", onUserJoined);
         // mSocket.on("user left", onUserLeft);
         mSocket.on("typing", onTyping);
@@ -141,7 +143,7 @@ public class ChatWindowActivity extends AppCompatActivity {
         mSocket.on("say to someone", onSayToSomeone);
         //mSocket.on("user_registration", user_registration);
         mSocket.on("get_Offline_Message", getOfflineMessage);
-        mSocket.connect();
+        //mSocket.connect();
 
     }
 
@@ -254,43 +256,39 @@ public class ChatWindowActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_leave) {
-            //leave();
+        if (id == R.id.action_logout) {
+            logOut();
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
     private void startSignIn() {
 
         mUsername = null;
         Intent intent = new Intent(this, LoginActivity.class);
-        startActivityForResult(intent, REQUEST_LOGIN);
+        startActivity(intent);
+
     }
 
     private void logOut() {
 
         prefsValues.clear();
-
-//        prefsValues.getPrefs().edit().clear();
-//        mUsername = null;
-//        Intent intent = new Intent(this, LoginActivity.class);
-//        startActivity(intent);
-        finish();
-        //startActivityForResult(intent, REQUEST_LOGIN);
-    }
-
-    private void leave() {
-        mUsername = null;
-        mSocket.disconnect();
-        mSocket.connect();
+        //mSocket.disconnect();
+        //mSocket.connect();
         startSignIn();
-    }
+        this.finish();
 
+    }
 
     private Emitter.Listener onConnect = new Emitter.Listener() {
         @Override
@@ -372,7 +370,6 @@ public class ChatWindowActivity extends AppCompatActivity {
 
         }
     };
-
 
 
     private Emitter.Listener onTyping = new Emitter.Listener() {
@@ -509,6 +506,6 @@ public class ChatWindowActivity extends AppCompatActivity {
         super.onBackPressed();
         //finish();
 
-        Log.e("onBackPressed","");
+        Log.e("onBackPressed", "");
     }
 }

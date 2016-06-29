@@ -9,6 +9,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -29,7 +31,7 @@ import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
 
-public class ChatListActivity extends AppCompatActivity {
+public class ChatListActivity extends BaseActivity {
 
     private static final int REQUEST_LOGIN = 0;
     private static final int TYPING_TIMER_LENGTH = 600;
@@ -49,11 +51,11 @@ public class ChatListActivity extends AppCompatActivity {
     ArrayList<User> mUserList = new ArrayList<User>();
     User mReceiveUser;
     Button mLogOutButton;
-    private PrefsValues prefsValues;
+    //private PrefsValues prefsValues;
     ProgressDialog progressDialog;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_list);
 
@@ -80,7 +82,7 @@ public class ChatListActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        Log.e(" onStart ", "ChatListActivity Called : ");
+        //Log.e(" onStart ", "ChatListActivity Called : ");
         UserRegistration();
     }
 
@@ -105,17 +107,16 @@ public class ChatListActivity extends AppCompatActivity {
         super.onDestroy();
         Log.e(" onDestroy ", "ChatListActivity Called : ");
         //mSocket.disconnect();
-
-       /* mSocket.off(Socket.EVENT_CONNECT, onConnect);
+        //mSocket.off(Socket.EVENT_CONNECT, onConnect);
         mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
-        mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
-        mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
-        mSocket.off("new message", onNewMessage);
-        mSocket.off("user joined", onUserJoined);
-        mSocket.off("user left", onUserLeft);
+        //mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
+        //mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        //mSocket.off("new message", onNewMessage);
+        //.off("user joined", onUserJoined);
+        //mSocket.off("user left", onUserLeft);
         // mSocket.off("say to someone", onSayToSomeone);
-        mSocket.off("user_registration", user_registration);
-        mSocket.off("get_Offline_Message", getOfflineMessage);*/
+        //mSocket.off("user_registration", user_registration);
+        //mSocket.off("get_Offline_Message", getOfflineMessage);
     }
 
     public void connetSocketAndListener() {
@@ -141,7 +142,7 @@ public class ChatListActivity extends AppCompatActivity {
 
         progressDialog.show();
         mSocket.emit("user_registration", mUsername, mUsername + "@gmail.com");
-        Log.e("user_registration", "Called : " + mUsername);
+        // Log.e("user_reg=>ChatList", "Called : " + mUsername);
     }
 
 
@@ -150,7 +151,7 @@ public class ChatListActivity extends AppCompatActivity {
         // shihab
 
 
-        prefsValues = new PrefsValues(getApplicationContext(), "chat_me", 0);
+        //prefsValues = new PrefsValues(getApplicationContext(), "chat_me", 0);
 
         mUsername = prefsValues.getUserName();
 
@@ -199,39 +200,37 @@ public class ChatListActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_leave) {
-            //leave();
+        if (id == R.id.action_logout) {
+            logOut();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
 
-//    private void startSignIn() {
-//
-//        mUsername = null;
-//        Intent intent = new Intent(this, LoginActivity.class);
-//        startActivityForResult(intent, REQUEST_LOGIN);
-//    }
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    private void startSignIn() {
+
+        mUsername = null;
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+    }
 
     private void logOut() {
 
         prefsValues.clear();
-
-//        prefsValues.getPrefs().edit().clear();
-//        mUsername = null;
-//        Intent intent = new Intent(this, LoginActivity.class);
-//        startActivity(intent);
-        finish();
-        //startActivityForResult(intent, REQUEST_LOGIN);
-    }
-
-    private void leave() {
-        mUsername = null;
         mSocket.disconnect();
-        mSocket.connect();
-        //startSignIn();
+        //mSocket.connect();
+        this.finish();
+        startSignIn();
+
     }
 
 
@@ -243,9 +242,8 @@ public class ChatListActivity extends AppCompatActivity {
                 public void run() {
 
                     try {
-
                         //JSONObject data = (JSONObject) args[0];
-                        Log.e("onConnect", "" + args.toString());
+                        Log.e("onConnect->ChatList", "" + args.toString());
 
                         if (!isConnected) {
                             if (null != mUsername)
@@ -274,7 +272,7 @@ public class ChatListActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     //JSONObject data = (JSONObject) args[0];
-                    Log.i("on Disconnect", "" + args.toString());
+                    Log.e("onDisconnect->ChatList", "" + args.toString());
                     isConnected = false;
                     Toast.makeText(getApplicationContext(),
                             R.string.disconnect, Toast.LENGTH_LONG).show();
@@ -290,7 +288,7 @@ public class ChatListActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     //JSONObject data = (JSONObject) args[0];
-                    Log.i("on Connect Error", "" + args.toString());
+                    Log.e("onContError->ChatList", "" + args.toString());
                     Toast.makeText(getApplicationContext(),
                             R.string.error_connect, Toast.LENGTH_LONG).show();
                 }
@@ -307,7 +305,7 @@ public class ChatListActivity extends AppCompatActivity {
                     //JSONObject data = (JSONObject) args[0];
                     String username;
                     String message;
-                    Log.i("on New Message", "" + args.toString());
+                    Log.e("onNewMessage->ChatList", "" + args.toString());
                     try {
                         //username = data.getString("username");
                         //message = data.getString("message");
@@ -334,7 +332,7 @@ public class ChatListActivity extends AppCompatActivity {
                     int numUsers;
                     try {
 
-                        Log.i("on User Joined", "" + data.toString());
+                        Log.e("onUserJoined->ChatList", "" + data.toString());
                         username = data.getString("username");
                         numUsers = data.getInt("numUsers");
 
@@ -360,7 +358,7 @@ public class ChatListActivity extends AppCompatActivity {
                     int numUsers;
                     try {
 
-                        Log.i("on User Left", "" + data.toString());
+                        Log.e("on User Left", "" + data.toString());
                         username = data.getString("username");
                         numUsers = data.getInt("numUsers");
                     } catch (JSONException e) {
@@ -386,8 +384,8 @@ public class ChatListActivity extends AppCompatActivity {
                     try {
                         /*JSONArray jsonArray = new JSONArray(args);
 
-                        String aa = jsonArray.getString(0).toString();
-                        Log.i("get Offline Message:", aa);*/
+                        String aa = jsonArray.getString(0).toString();*/
+                        Log.i("getOfflineMsg->ChatList", args[0].toString());
 
                         JSONArray newArr = new JSONArray(args.toString());
 //                        Log.e("email",newArr.getJSONObject(0).getString("email"));
@@ -429,7 +427,7 @@ public class ChatListActivity extends AppCompatActivity {
                         String json = gson.toJson(args);
 
                         JSONArray test = new JSONArray(json);
-                        Log.i("user registration", json);
+                        Log.e("use_reg->ChatList", json);
 
                         //JSONArray jsonArray = new JSONArray(args);
                         //String aa = jsonArray.getString(0).toString();
@@ -448,12 +446,11 @@ public class ChatListActivity extends AppCompatActivity {
 
                             jo = new JSONObject(nvp);
 
-
                             String name = jo.getString("user_name");
 
                             if (name.equalsIgnoreCase(mUsername)) {
 
-                                Log.i("user_matched", "I am " + mUsername);
+                                //Log.i("user_matched", "I am " + mUsername);
                                 continue;
                             }
 
@@ -462,11 +459,13 @@ public class ChatListActivity extends AppCompatActivity {
                             user.setEmail(jo.getString("email"));
                             user.setSocket_id(jo.getString("socket_id"));
                             user.setLastSeen(jo.getString("last_seen"));
+                            //Log.i("Status", "" + jo.getString("status"));
+                            //user.setStatus(Boolean.parseBoolean(jo.getString("status")));
 
                             if (jo.getString("status").equalsIgnoreCase("1")) {
-                                user.setStatus("online");
+                                user.setStatus(true);
                             } else {
-                                user.setStatus("offline");
+                                user.setStatus(false);
                             }
 
                             mUserList.add(user);
