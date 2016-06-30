@@ -42,7 +42,7 @@ public class ChatMessageAdapter extends ArrayAdapter<ChatMessage> {
         if (viewType == MY_MESSAGE) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_mine_message, parent, false);
 
-            TextView textView = (TextView) convertView.findViewById(R.id.text);
+            TextView textView = (TextView) convertView.findViewById(R.id.message);
             TextView time = (TextView) convertView.findViewById(R.id.time_n_date);
 
             textView.setText(getItem(position).getContent());
@@ -51,7 +51,7 @@ public class ChatMessageAdapter extends ArrayAdapter<ChatMessage> {
         } else if (viewType == OTHER_MESSAGE) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_other_message, parent, false);
 
-            TextView textView = (TextView) convertView.findViewById(R.id.text);
+            TextView textView = (TextView) convertView.findViewById(R.id.message);
             TextView time = (TextView) convertView.findViewById(R.id.time_n_date);
 
             textView.setText(getItem(position).getContent());

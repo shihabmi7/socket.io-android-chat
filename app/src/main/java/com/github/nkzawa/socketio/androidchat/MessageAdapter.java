@@ -25,15 +25,20 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         int layout = -1;
 
         switch (viewType) {
-        case Message.TYPE_MESSAGE:
-            layout = R.layout.item_message;
-            break;
-        case Message.TYPE_LOG:
-            layout = R.layout.item_log;
-            break;
-        case Message.TYPE_ACTION:
-            layout = R.layout.item_action;
-            break;
+            case Message.TYPE_MESSAGE_MINE:
+//            layout = R.layout.item_message;
+                layout = R.layout.item_mine_image;
+                break;
+            case Message.TYPE_MESSAGE_FRIENDS:
+//            layout = R.layout.item_message;
+                layout = R.layout.item_other_image;
+                break;
+            case Message.TYPE_LOG:
+                layout = R.layout.item_log;
+                break;
+            case Message.TYPE_ACTION:
+                layout = R.layout.item_action;
+                break;
         }
 
         View v = LayoutInflater
@@ -47,7 +52,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
         Message message = mMessages.get(position);
         viewHolder.setMessage(message.getMessage());
-        viewHolder.setUsername(message.getUsername());
+        viewHolder.setMessageTime(message.getmMessageTime());
     }
 
     @Override
@@ -61,20 +66,23 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        private TextView mUsernameView;
+        private TextView mMessageTime;
         private TextView mMessageView;
 
         public ViewHolder(View itemView) {
             super(itemView);
 
-            mUsernameView = (TextView) itemView.findViewById(R.id.username);
+//            mUsernameView = (TextView) itemView.findViewById(R.id.username);
+//            mMessageView = (TextView) itemView.findViewById(R.id.message);
+
+            mMessageTime = (TextView) itemView.findViewById(R.id.time_n_date);
             mMessageView = (TextView) itemView.findViewById(R.id.message);
         }
 
-        public void setUsername(String username) {
-            if (null == mUsernameView) return;
-            mUsernameView.setText(username);
-            mUsernameView.setTextColor(getUsernameColor(username));
+        public void setMessageTime(String messageTime) {
+            if (null == mMessageTime) return;
+            mMessageTime.setText(messageTime);
+            // mUsernameView.setTextColor(getUsernameColor(username));
         }
 
         public void setMessage(String message) {

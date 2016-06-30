@@ -1,9 +1,7 @@
 package com.github.nkzawa.socketio.androidchat;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -12,9 +10,6 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
@@ -26,10 +21,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
-import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
 
@@ -101,11 +99,11 @@ public class ChatWindowActivity extends BaseActivity {
         super.onDestroy();
 
         //mSocket.off(Socket.EVENT_CONNECT, onConnect);
-       // mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
-      //  mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
-       // mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        // mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
+        //  mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
+        // mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
 
-       // mSocket.disconnect();
+        // mSocket.disconnect();
     }
 
 
@@ -113,9 +111,24 @@ public class ChatWindowActivity extends BaseActivity {
         mMessagesView.scrollToPosition(mAdapter.getItemCount() - 1);
     }
 
-    private void addMessage(String username, String message) {
-        mMessages.add(new Message.Builder(Message.TYPE_MESSAGE)
-                .username(username).message(message).build());
+
+    String getDateToday() {
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat date = new SimpleDateFormat("hh:mm:ss SS");
+        return date.format(c.getTime());
+    }
+
+
+    private void addUserMessage(String messageTime, String message) {
+        mMessages.add(new Message.Builder(Message.TYPE_MESSAGE_MINE)
+                .messageTime(messageTime).message(message).build());
+        mAdapter.notifyItemInserted(mMessages.size() - 1);
+        scrollToBottom();
+    }
+
+    private void addFriendsMessage(String messageTime, String message) {
+        mMessages.add(new Message.Builder(Message.TYPE_MESSAGE_FRIENDS)
+                .messageTime(messageTime).message(message).build());
         mAdapter.notifyItemInserted(mMessages.size() - 1);
         scrollToBottom();
     }
@@ -146,7 +159,6 @@ public class ChatWindowActivity extends BaseActivity {
         //mSocket.connect();
 
     }
-
 
     public void initiateUI() {
 
@@ -230,7 +242,7 @@ public class ChatWindowActivity extends BaseActivity {
         if (mReceiveUser != null) {
 
             mInputMessageView.setText("");
-            addMessage("me: " + mUsername, message);
+            addUserMessage(getDateToday(), message);
 
             mSocket.emit("say to someone", mReceiveUser.getUserName(), mReceiveUser.getSocket_id(), mReceiveUser.getEmail(), message);
             Log.e("send msg", "From User Id: " + mUsername + " To:  " + mReceiveUser.getEmail() + "  " + message);
@@ -239,30 +251,11 @@ public class ChatWindowActivity extends BaseActivity {
 
             Toast.makeText(this, "please select a user", Toast.LENGTH_SHORT).show();
             mInputMessageView.setText("");
-            //addMessage(mUsername, message);
+            //addUserMessage(mUsername, message);
         }
 
     }
 
-
-
-//    private void startSignIn() {
-//
-//        mUsername = null;
-//        Intent intent = new Intent(this, LoginActivity.class);
-//        startActivity(intent);
-//
-//    }
-//
-//    private void logOut() {
-//
-//        prefsValues.clear();
-//        //mSocket.disconnect();
-//        //mSocket.connect();
-//        startSignIn();
-//        this.finish();
-//
-//    }
 
     private Emitter.Listener onConnect = new Emitter.Listener() {
         @Override
@@ -338,7 +331,7 @@ public class ChatWindowActivity extends BaseActivity {
                     }
 
                     //removeTyping(username);
-                    // addMessage(username, message);
+                    // addUserMessage(username, message);
                 }
             });
 
@@ -402,7 +395,7 @@ public class ChatWindowActivity extends BaseActivity {
 
                             JSONObject jsonObject = newArr.getJSONObject(i);
                             String sender_name = jsonObject.getString("sender_mail");
-                            addMessage(sender_name, jsonObject.getString("message"));
+                            addUserMessage(getDateToday(), jsonObject.getString("message"));
 
                         }
 
@@ -441,7 +434,7 @@ public class ChatWindowActivity extends BaseActivity {
                     }
 
                     removeTyping(username);
-                    addMessage(username, message);
+                    addFriendsMessage(getDateToday(), message);
                 }
             });
         }

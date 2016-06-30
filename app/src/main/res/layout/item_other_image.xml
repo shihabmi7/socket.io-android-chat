@@ -2,7 +2,18 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp">
+
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/imageview_mine"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/man" />
+
 
     <me.himanshusoni.chatmessageview.ChatMessageView
 
@@ -10,6 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginRight="4dp"
+        android:layout_toRightOf="@+id/imageview_mine"
         app:cmv_arrowGravity="start"
         app:cmv_arrowMargin="6dp"
         app:cmv_arrowPosition="left"
@@ -27,21 +39,19 @@
             android:layout_height="wrap_content"
             android:layout_margin="6dp">
 
-            <ImageView
-                android:id="@+id/imageview_mine"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_centerVertical="true"
-                android:background="#aaffffff"
-                android:src="@drawable/man" />
+            <!--            <ImageView
+                            android:id="@+id/imageview_mine"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_centerVertical="true"
+                            android:background="#aaffffff"
+                            android:src="@drawable/man" />-->
 
             <TextView
-
-                android:id="@+id/text"
+                android:id="@+id/message"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toRightOf="@+id/imageview_mine"
                 android:padding="4dp"
                 android:text="Hello"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
@@ -51,8 +61,8 @@
                 android:id="@+id/time_n_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/text"
-                android:layout_below="@+id/text"
+                android:layout_alignLeft="@+id/message"
+                android:layout_below="@+id/message"
                 android:padding="6dp"
                 android:text="date"
                 android:textColor="?android:textColorPrimary"

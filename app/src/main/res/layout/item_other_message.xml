@@ -18,7 +18,7 @@
         app:cmv_showArrow="true">
 
         <TextView
-            android:id="@+id/text"
+            android:id="@+id/message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/app_name"
@@ -27,7 +27,7 @@
         <TextView
             android:id="@+id/time_n_date"
             android:layout_width="wrap_content"
-            android:layout_below="@+id/text"
+            android:layout_below="@+id/message"
             android:layout_height="wrap_content"
             android:text="date"
             android:textSize="10sp"
