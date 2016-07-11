@@ -75,13 +75,11 @@ public class ChatWindowActivity extends BaseActivity {
         initiateUI();
 
     }
-
     @Override
     protected void onResume() {
         super.onResume();
         //connetSocketAndListener();
     }
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -93,7 +91,6 @@ public class ChatWindowActivity extends BaseActivity {
         mSocket.off("get_Offline_Message", getOfflineMessage);
 
     }
-
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -106,38 +103,14 @@ public class ChatWindowActivity extends BaseActivity {
         // mSocket.disconnect();
     }
 
-
     private void scrollToBottom() {
         mMessagesView.scrollToPosition(mAdapter.getItemCount() - 1);
     }
-
 
     String getDateToday() {
         Calendar c = Calendar.getInstance();
         SimpleDateFormat date = new SimpleDateFormat("hh:mm:ss SS");
         return date.format(c.getTime());
-    }
-
-
-    private void addUserMessage(String messageTime, String message) {
-        mMessages.add(new Message.Builder(Message.TYPE_MESSAGE_MINE)
-                .messageTime(messageTime).message(message).build());
-        mAdapter.notifyItemInserted(mMessages.size() - 1);
-        scrollToBottom();
-    }
-
-    private void addFriendsMessage(String messageTime, String message) {
-        mMessages.add(new Message.Builder(Message.TYPE_MESSAGE_FRIENDS)
-                .messageTime(messageTime).message(message).build());
-        mAdapter.notifyItemInserted(mMessages.size() - 1);
-        scrollToBottom();
-    }
-
-    private void addTyping(String username) {
-        mMessages.add(new Message.Builder(Message.TYPE_ACTION)
-                .username(username).build());
-        mAdapter.notifyItemInserted(mMessages.size() - 1);
-        scrollToBottom();
     }
 
     public void connetSocketAndListener() {
@@ -256,8 +229,28 @@ public class ChatWindowActivity extends BaseActivity {
 
     }
 
+    private void addUserMessage(String messageTime, String message) {
+        mMessages.add(new Message.Builder(Message.TYPE_MESSAGE_MINE)
+                .messageTime(messageTime).message(message).build());
+        mAdapter.notifyItemInserted(mMessages.size() - 1);
+        scrollToBottom();
+    }
 
-    private Emitter.Listener onConnect = new Emitter.Listener() {
+    private void addFriendsMessage(String messageTime, String message) {
+        mMessages.add(new Message.Builder(Message.TYPE_MESSAGE_FRIENDS)
+                .messageTime(messageTime).message(message).build());
+        mAdapter.notifyItemInserted(mMessages.size() - 1);
+        scrollToBottom();
+    }
+
+    private void addTyping(String username) {
+        mMessages.add(new Message.Builder(Message.TYPE_ACTION)
+                .username(username).build());
+        mAdapter.notifyItemInserted(mMessages.size() - 1);
+        scrollToBottom();
+    }
+
+    private Emitter.Listener getOfflineMessage = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
             runOnUiThread(new Runnable() {
@@ -265,56 +258,35 @@ public class ChatWindowActivity extends BaseActivity {
                 public void run() {
 
                     try {
+                        JSONArray jsonArray = new JSONArray(args);
 
-                        JSONObject data = (JSONObject) args[0];
-                        Log.e("onConnect", "" + data.toString());
 
-                        if (!isConnected) {
-                            if (null != mUsername)
-                                mSocket.emit("add user", mUsername);
+                        String aa = jsonArray.getString(0).toString();
+                        Log.e("getOfflineMessage:", aa);
+                        JSONArray newArr = new JSONArray(aa);
+//                        Log.e("email",newArr.getJSONObject(0).getString("email"));
+                        for (int i = 0; i < newArr.length(); i++) {
 
-                            Toast.makeText(getApplicationContext(),
-                                    R.string.connect, Toast.LENGTH_LONG).show();
+                            JSONObject jsonObject = newArr.getJSONObject(i);
+                            String sender_name = jsonObject.getString("sender_mail");
+                            addUserMessage(getDateToday(), jsonObject.getString("message"));
 
-                            isConnected = true;
                         }
 
+                    } catch (JSONException e) {
+                        Log.e("getOfflineMessage", "JSONException" + e.toString());
+                        //return;
                     } catch (Exception e) {
-
+                        Log.e("getOfflineMessage", "Exception" + e.toString());
+                        //return;
                     }
+
+
                 }
             });
         }
     };
-
-    private Emitter.Listener onDisconnect = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    isConnected = false;
-                    Toast.makeText(getApplicationContext(),
-                            R.string.disconnect, Toast.LENGTH_LONG).show();
-                }
-            });
-        }
-    };
-
-    private Emitter.Listener onConnectError = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(),
-                            R.string.error_connect, Toast.LENGTH_LONG).show();
-                }
-            });
-        }
-    };
-
-    private Emitter.Listener onNewMessage = new Emitter.Listener() {
+    public Emitter.Listener onNewMessage = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
             runOnUiThread(new Runnable() {
@@ -357,6 +329,7 @@ public class ChatWindowActivity extends BaseActivity {
             });
         }
     };
+
     private Emitter.Listener onStopTyping = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -376,42 +349,7 @@ public class ChatWindowActivity extends BaseActivity {
         }
     };
 
-    private Emitter.Listener getOfflineMessage = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
 
-                    try {
-                        JSONArray jsonArray = new JSONArray(args);
-
-
-                        String aa = jsonArray.getString(0).toString();
-                        Log.e("getOfflineMessage:", aa);
-                        JSONArray newArr = new JSONArray(aa);
-//                        Log.e("email",newArr.getJSONObject(0).getString("email"));
-                        for (int i = 0; i < newArr.length(); i++) {
-
-                            JSONObject jsonObject = newArr.getJSONObject(i);
-                            String sender_name = jsonObject.getString("sender_mail");
-                            addUserMessage(getDateToday(), jsonObject.getString("message"));
-
-                        }
-
-                    } catch (JSONException e) {
-                        Log.e("getOfflineMessage", "JSONException" + e.toString());
-                        //return;
-                    } catch (Exception e) {
-                        Log.e("getOfflineMessage", "Exception" + e.toString());
-                        //return;
-                    }
-
-
-                }
-            });
-        }
-    };
 
     private Emitter.Listener onSayToSomeone = new Emitter.Listener() {
         @Override

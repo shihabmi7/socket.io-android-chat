@@ -38,7 +38,7 @@ public class ChatListActivity extends BaseActivity {
 
     private RecyclerView mMessagesView;
     private EditText mInputMessageView;
-    private List<Message> mMessages = new ArrayList<Message>();
+
     //private RecyclerView.Adapter mUserAdapter;
     private boolean mTyping = false;
     private Handler mTypingHandler = new Handler();
@@ -126,7 +126,7 @@ public class ChatListActivity extends BaseActivity {
         mSocket.on("user joined", onUserJoined);
         mSocket.on("user left", onUserLeft);
         mSocket.on("user_registration", user_registration);
-        mSocket.on("getOfflineMessage", getOfflineMessage);
+        //mSocket.on("getOfflineMessage", getOfflineMessage);
 
         mSocket.connect();
 
@@ -142,7 +142,7 @@ public class ChatListActivity extends BaseActivity {
         mUserListView.setAdapter(mUserAdapter);
 
         mUserListView.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(),
-                mMessagesView, new MainFragment.ClickListener() {
+                mUserListView, new MainFragment.ClickListener() {
             @Override
             public void onClick(View view, int position) {
 
@@ -160,12 +160,10 @@ public class ChatListActivity extends BaseActivity {
 
     }
 
-
     @Override
     public void onBackPressed() {
         super.onBackPressed();
         exitApp();
     }
-
 
 }

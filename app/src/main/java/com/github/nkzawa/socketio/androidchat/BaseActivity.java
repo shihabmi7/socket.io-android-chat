@@ -252,30 +252,6 @@ public class BaseActivity extends AppCompatActivity {
         }
     };
 
-    public Emitter.Listener onNewMessage = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    //JSONObject data = (JSONObject) args[0];
-                    String username;
-                    String message;
-                    Log.e("onNewMessage->ChatList", "" + args.toString());
-                    try {
-                        //username = data.getString("username");
-                        //message = data.getString("message");
-                    } catch (Exception e) {
-                        return;
-                    }
-
-                    //removeTyping(username);
-                    // addMessage(username, message);
-                }
-            });
-
-        }
-    };
 
     public Emitter.Listener onUserJoined = new Emitter.Listener() {
         @Override
@@ -330,42 +306,32 @@ public class BaseActivity extends AppCompatActivity {
     };
 
 
-    public Emitter.Listener getOfflineMessage = new Emitter.Listener() {
+    public Emitter.Listener onNewMessage = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-
+                    JSONObject data = (JSONObject) args[0];
+                    String username;
+                    String message;
                     try {
-                        /*JSONArray jsonArray = new JSONArray(args);
-
-                        String aa = jsonArray.getString(0).toString();*/
-                        Log.i("getOfflineMsg->ChatList", args[0].toString());
-
-                        JSONArray newArr = new JSONArray(args.toString());
-//                        Log.e("email",newArr.getJSONObject(0).getString("email"));
-                        for (int i = 0; i < newArr.length(); i++) {
-
-                            JSONObject jsonObject = newArr.getJSONObject(i);
-                            String sender_name = jsonObject.getString("sender_mail");
-
-                            //addMessage(sender_name, jsonObject.getString("message"));
-
-                        }
-
+                        username = data.getString("username");
+                        message = data.getString("message");
                     } catch (JSONException e) {
-                        Log.e("getOfflineMessage", "JSONException" + e.toString());
-                        //return;
-                    } catch (Exception e) {
-                        Log.e("getOfflineMessage", "Exception" + e.toString());
-                        //return;
+                        return;
                     }
 
+                    //removeTyping(username);
+                    // addUserMessage(username, message);
                 }
             });
+
         }
     };
+
+
+
 
     public void UserRegistration() {
 

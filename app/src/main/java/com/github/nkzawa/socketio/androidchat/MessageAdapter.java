@@ -27,7 +27,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         switch (viewType) {
             case Message.TYPE_MESSAGE_MINE:
 //            layout = R.layout.item_message;
-                layout = R.layout.item_mine_image;
+                layout = R.layout.item_mine_message;
                 break;
             case Message.TYPE_MESSAGE_FRIENDS:
 //            layout = R.layout.item_message;

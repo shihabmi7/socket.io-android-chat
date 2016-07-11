@@ -1,37 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="1dp">
 
-    <me.himanshusoni.chatmessageview.ChatMessageView xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/chatMessageView"
-        android:layout_width="match_parent"
+    <!--<de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/imageview_mine"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/man" />-->
+
+    <me.himanshusoni.chatmessageview.ChatMessageView
+
+        android:id="@+id/chatMessageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="4dp"
+        android:layout_alignParentRight="true"
         app:cmv_arrowGravity="start"
-        app:cmv_arrowMargin="3dp"
+        app:cmv_arrowMargin="6dp"
         app:cmv_arrowPosition="right"
         app:cmv_backgroundColor="#88BABABA"
         app:cmv_backgroundColorPressed="#FFBABABA"
-        app:cmv_contentPadding="10dp"
-        app:cmv_cornerRadius="3dp"
+        app:cmv_contentPadding="6dp"
+        app:cmv_cornerRadius="6dp"
         app:cmv_showArrow="true">
 
-        <TextView
-            android:id="@+id/message"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
-        <TextView
-            android:id="@+id/time_n_date"
+        <RelativeLayout
+
+            android:id="@+id/rel_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/message"
-            android:text="date"
-            android:textColor="?android:textColorPrimary"
-            android:textSize="10sp" />
+            android:layout_margin="6dp">
+
+            <TextView
+                android:id="@+id/message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:gravity="right"
+                android:padding="4dp"
+                android:text="Hello"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+            <TextView
+
+                android:id="@+id/time_n_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_below="@+id/message"
+                android:text="date"
+                android:textColor="?android:textColorPrimary"
+                android:textSize="10sp" />
+
+        </RelativeLayout>
+
+
     </me.himanshusoni.chatmessageview.ChatMessageView>
 
-</LinearLayout>
+
+</RelativeLayout>
