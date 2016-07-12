@@ -11,7 +11,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 
 
 public class ChatListActivity extends BaseActivity {
@@ -53,6 +58,7 @@ public class ChatListActivity extends BaseActivity {
         connetSocketAndListener();
         initiateUI();
 
+
         Log.e(" onCreate", "ChatListActivity Called : ");
     }
 
@@ -68,9 +74,11 @@ public class ChatListActivity extends BaseActivity {
         super.onResume();
         Log.e(" onResume ", "ChatListActivity Called : ");
 
-        //connetSocketAndListener();
+        // connetSocketAndListener();
+        getOfflineMessage();
 
     }
+
 
     @Override
     protected void onPause() {
@@ -83,7 +91,7 @@ public class ChatListActivity extends BaseActivity {
     public void onDestroy() {
         super.onDestroy();
         Log.e(" onDestroy ", "ChatListActivity Called : ");
-        //mSocket.disconnect();
+
         //mSocket.off(Socket.EVENT_CONNECT, onConnect);
         mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
         //mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
@@ -94,6 +102,8 @@ public class ChatListActivity extends BaseActivity {
         // mSocket.off("say to someone", onSayToSomeone);
         //mSocket.off("user_registration", user_registration);
         //mSocket.off("get_Offline_Message", getOfflineMessage);
+
+        //mSocket.disconnect();
     }
 
     public void connetSocketAndListener() {
@@ -109,8 +119,7 @@ public class ChatListActivity extends BaseActivity {
         mSocket.on("user joined", onUserJoined);
         mSocket.on("user left", onUserLeft);
         mSocket.on("user_registration", user_registration);
-
-        //mSocket.on("getOfflineMessage", getOfflineMessage);
+        mSocket.on("getOfflineMessage", getOfflineMessage);
 
         mSocket.connect();
 
@@ -143,6 +152,64 @@ public class ChatListActivity extends BaseActivity {
         }));
 
     }
+
+    public void getOfflineMessage() {
+
+
+        mSocket.emit("ask_for_offline_message", mUsername + "@gmail.com");
+
+
+        /*Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                Log.e("thread ", "called..");
+            }
+        }, 100);
+*/
+    }
+
+    private Emitter.Listener getOfflineMessage = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    try {
+                        JSONArray jsonArray = new JSONArray(args);
+
+                        String aa = jsonArray.getString(0).toString();
+                        Log.e("getOfflineMessage:", aa);
+                        JSONArray newArr = new JSONArray(aa);
+//                        Log.e("email",newArr.getJSONObject(0).getString("email"));
+
+                        for (int i = 0; i < newArr.length(); i++) {
+
+                            JSONObject jsonObject = newArr.getJSONObject(i);
+                            String sender_name = jsonObject.getString("sender_mail");
+
+                            // addUserMessage(getDateToday(), jsonObject.getString("message"));
+
+                        }
+                        Toast.makeText(getApplicationContext(), newArr.length() + " message is arrived from from ur friends."
+                                , Toast.LENGTH_SHORT).show();
+
+                        Log.e("getOfflineMessage", newArr.length() + " message is arrived from ur friends." + newArr.length());
+
+                    } catch (JSONException e) {
+                        Log.e("getOfflineMessage", "JSONException" + e.toString());
+                        //return;
+                    } catch (Exception e) {
+                        Log.e("getOfflineMessage", "Exception" + e.toString());
+                        //return;
+                    }
+
+                }
+            });
+        }
+    };
 
     @Override
     public void onBackPressed() {

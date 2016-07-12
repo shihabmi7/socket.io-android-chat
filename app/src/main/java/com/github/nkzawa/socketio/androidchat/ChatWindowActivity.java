@@ -31,17 +31,12 @@ import io.socket.emitter.Emitter;
 
 public class ChatWindowActivity extends BaseActivity {
 
-    private static final int REQUEST_LOGIN = 0;
     private static final int TYPING_TIMER_LENGTH = 600;
-
-    private RecyclerView mMessagesRecyclerView;
     private EditText mInputMessageView;
-    //private List<Message> mMessages = new ArrayList<Message>();
-    //private RecyclerView.Adapter mMessageAdapter;
     private boolean mTyping = false;
     private Handler mTypingHandler = new Handler();
-    User mReceiveUser;
-    Toolbar toolbar;
+    private User mReceiveUser;
+    private Toolbar toolbar;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,38 +53,36 @@ public class ChatWindowActivity extends BaseActivity {
 
         connetSocketAndListener();
         initiateUI();
+        getChatHistory();
 
     }
+
     @Override
     protected void onResume() {
         super.onResume();
-        //connetSocketAndListener();
+
     }
+
+    private void getChatHistory(){
+
+        mSocket.emit("get_chat_history", mUsername + "@gmail.com", mReceiveUser.getEmail());
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
 
         mSocket.off("say to someone", onSayToSomeone);
         mSocket.off("new message", onNewMessage);
         mSocket.off("typing", onTyping);
         mSocket.off("stop typing", onStopTyping);
-        mSocket.off("get_Offline_Message", getOfflineMessage);
+        mSocket.off("get_chat_history", get_chat_history);
 
-    }
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        //mSocket.off(Socket.EVENT_CONNECT, onConnect);
-        // mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
-        //  mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
-        // mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
-
-        // mSocket.disconnect();
-    }
-
-    private void scrollToBottom() {
-        mMessagesRecyclerView.scrollToPosition(mMessageAdapter.getItemCount() - 1);
     }
 
     String getDateToday() {
@@ -100,21 +93,11 @@ public class ChatWindowActivity extends BaseActivity {
 
     public void connetSocketAndListener() {
 
-//        ChatApplication app = (ChatApplication) getApplication();
-//        mSocket = app.getSocket();
-//        mSocket.on(Socket.EVENT_CONNECT, onConnect);
-//        mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
-//        mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
-//        mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
-        // mSocket.on("user joined", onUserJoined);
-        // mSocket.on("user left", onUserLeft);
         mSocket.on("typing", onTyping);
         mSocket.on("stop typing", onStopTyping);
         mSocket.on("new message", onNewMessage);
         mSocket.on("say to someone", onSayToSomeone);
-        //mSocket.on("user_registration", user_registration);
-        mSocket.on("get_Offline_Message", getOfflineMessage);
-        //mSocket.connect();
+        mSocket.on("get_chat_history", get_chat_history);
 
     }
 
@@ -202,8 +185,8 @@ public class ChatWindowActivity extends BaseActivity {
             mInputMessageView.setText("");
             addUserMessage(getDateToday(), message);
 
-            mSocket.emit("say to someone", mReceiveUser.getUserName(), mReceiveUser.getSocket_id(), mReceiveUser.getEmail(), message);
-            Log.e("send msg", "From User Id: " + mUsername + " To:  " + mReceiveUser.getEmail() + "  " + message);
+            mSocket.emit("say to someone", mUsername+"@gmail.com", mReceiveUser.getSocket_id(), mReceiveUser.getEmail(), message);
+            Log.e("send msg", "From User Id: " + mUsername+"@gmail.com" + " To:  " + mReceiveUser.getEmail() + "  " + message);
 
         } else {
 
@@ -228,14 +211,28 @@ public class ChatWindowActivity extends BaseActivity {
         scrollToBottom();
     }
 
-    private void addTyping(String username) {
+    public void addTyping(String username) {
         mMessages.add(new Message.Builder(Message.TYPE_ACTION)
                 .username(username).build());
         mMessageAdapter.notifyItemInserted(mMessages.size() - 1);
         scrollToBottom();
     }
 
-    private Emitter.Listener getOfflineMessage = new Emitter.Listener() {
+    public void removeTyping(String username) {
+        for (int i = mMessages.size() - 1; i >= 0; i--) {
+            Message message = mMessages.get(i);
+            if (message.getType() == Message.TYPE_ACTION && message.getUsername().equals(username)) {
+                mMessages.remove(i);
+                mMessageAdapter.notifyItemRemoved(i);
+            }
+        }
+    }
+
+    public void scrollToBottom() {
+        mMessagesRecyclerView.scrollToPosition(mMessageAdapter.getItemCount() - 1);
+    }
+
+    private Emitter.Listener get_chat_history = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
             runOnUiThread(new Runnable() {
@@ -245,27 +242,30 @@ public class ChatWindowActivity extends BaseActivity {
                     try {
                         JSONArray jsonArray = new JSONArray(args);
 
-
                         String aa = jsonArray.getString(0).toString();
-                        Log.e("getOfflineMessage:", aa);
+                        Log.e("get_chat_history:", aa);
                         JSONArray newArr = new JSONArray(aa);
 //                        Log.e("email",newArr.getJSONObject(0).getString("email"));
                         for (int i = 0; i < newArr.length(); i++) {
 
                             JSONObject jsonObject = newArr.getJSONObject(i);
                             String sender_name = jsonObject.getString("sender_mail");
-                            addUserMessage(getDateToday(), jsonObject.getString("message"));
+
+                            // addUserMessage(getDateToday(), jsonObject.getString("message"));
 
                         }
+                        Toast.makeText(getApplicationContext(), newArr.length() + " message in history"
+                                , Toast.LENGTH_SHORT).show();
+
+                        Log.e("get_chat_history", newArr.length() + " message in history");
 
                     } catch (JSONException e) {
-                        Log.e("getOfflineMessage", "JSONException" + e.toString());
+                        Log.e("get_chat_history", "JSONException" + e.toString());
                         //return;
                     } catch (Exception e) {
-                        Log.e("getOfflineMessage", "Exception" + e.toString());
+                        Log.e("get_chat_history", "Exception" + e.toString());
                         //return;
                     }
-
 
                 }
             });
@@ -335,6 +335,15 @@ public class ChatWindowActivity extends BaseActivity {
     };
 
 
+    private Runnable onTypingTimeout = new Runnable() {
+        @Override
+        public void run() {
+            if (!mTyping) return;
+
+            mTyping = false;
+            mSocket.emit("stop typing");
+        }
+    };
 
     private Emitter.Listener onSayToSomeone = new Emitter.Listener() {
         @Override
@@ -363,32 +372,6 @@ public class ChatWindowActivity extends BaseActivity {
         }
     };
 
-
-    private void removeTyping(String username) {
-        for (int i = mMessages.size() - 1; i >= 0; i--) {
-            Message message = mMessages.get(i);
-            if (message.getType() == Message.TYPE_ACTION && message.getUsername().equals(username)) {
-                mMessages.remove(i);
-                mMessageAdapter.notifyItemRemoved(i);
-            }
-        }
-    }
-
-    private Runnable onTypingTimeout = new Runnable() {
-        @Override
-        public void run() {
-            if (!mTyping) return;
-
-            mTyping = false;
-            mSocket.emit("stop typing");
-        }
-    };
-
-    public interface ClickListener {
-        void onClick(View view, int position);
-
-        void onLongClick(View view, int position);
-    }
 
     @Override
     public void onBackPressed() {

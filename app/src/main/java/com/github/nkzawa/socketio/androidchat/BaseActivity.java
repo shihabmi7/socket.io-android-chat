@@ -33,7 +33,7 @@ public class BaseActivity extends AppCompatActivity {
 
     public String mUsername;
     public Socket mSocket;
-    public String mUserID;
+    public RecyclerView mMessagesRecyclerView;
     public RecyclerView.Adapter mUserAdapter,mMessageAdapter;
     public Boolean isConnected = true;
     public ArrayList<User> mUserList = new ArrayList<User>();
@@ -330,12 +330,10 @@ public class BaseActivity extends AppCompatActivity {
     };
 
 
-
-
     public void UserRegistration() {
 
         progressDialog.show();
-        mSocket.emit("user_registration", mUsername, mUsername + "@gmail.com");
+        mSocket.emit("user_login_and_registration", mUsername, mUsername + "@gmail.com");
         // Log.e("user_reg=>ChatList", "Called : " + mUsername);
     }
 
@@ -349,10 +347,7 @@ public class BaseActivity extends AppCompatActivity {
         //finish();
     }
 
-    public interface ClickListener {
-        void onClick(View view, int position);
 
-        void onLongClick(View view, int position);
-    }
+
 
 }
