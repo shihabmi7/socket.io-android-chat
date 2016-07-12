@@ -21,11 +21,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import io.socket.emitter.Emitter;
@@ -36,22 +34,13 @@ public class ChatWindowActivity extends BaseActivity {
     private static final int REQUEST_LOGIN = 0;
     private static final int TYPING_TIMER_LENGTH = 600;
 
-    private RecyclerView mMessagesView;
+    private RecyclerView mMessagesRecyclerView;
     private EditText mInputMessageView;
-    private List<Message> mMessages = new ArrayList<Message>();
-    private RecyclerView.Adapter mAdapter, mUsrAdapter;
+    //private List<Message> mMessages = new ArrayList<Message>();
+    //private RecyclerView.Adapter mMessageAdapter;
     private boolean mTyping = false;
     private Handler mTypingHandler = new Handler();
-    //private String mUsername;
-    private String mUserEmail;
-    //private Socket mSocket;
-    private String mUserID;
-
-    private Boolean isConnected = true;
-    private RecyclerView mUserListView;
-    ArrayList<User> mUserList = new ArrayList<User>();
     User mReceiveUser;
-    //private PrefsValues prefsValues;
     Toolbar toolbar;
 
     @Override
@@ -67,10 +56,6 @@ public class ChatWindowActivity extends BaseActivity {
         //toolbar.setLogo(R.drawable.ic_launcher);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        prefsValues = new PrefsValues(getApplicationContext(), "chat_me", 0);
-        mUsername = prefsValues.getUserName();
-
-        Log.e("UserName", " UserName" + prefsValues.getUserName());
         connetSocketAndListener();
         initiateUI();
 
@@ -104,7 +89,7 @@ public class ChatWindowActivity extends BaseActivity {
     }
 
     private void scrollToBottom() {
-        mMessagesView.scrollToPosition(mAdapter.getItemCount() - 1);
+        mMessagesRecyclerView.scrollToPosition(mMessageAdapter.getItemCount() - 1);
     }
 
     String getDateToday() {
@@ -145,10 +130,10 @@ public class ChatWindowActivity extends BaseActivity {
         getSupportActionBar().setTitle(mReceiveUser.getUserName());
 
 
-        mMessagesView = (RecyclerView) findViewById(R.id.messageRecycleView);
-        mMessagesView.setLayoutManager(new LinearLayoutManager(this));
-        mAdapter = new MessageAdapter(this, mMessages);
-        mMessagesView.setAdapter(mAdapter);
+        mMessagesRecyclerView = (RecyclerView) findViewById(R.id.messageRecycleView);
+        mMessagesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mMessageAdapter = new MessageAdapter(this, mMessages);
+        mMessagesRecyclerView.setAdapter(mMessageAdapter);
 
 
         mInputMessageView = (EditText) findViewById(R.id.message_input);
@@ -232,21 +217,21 @@ public class ChatWindowActivity extends BaseActivity {
     private void addUserMessage(String messageTime, String message) {
         mMessages.add(new Message.Builder(Message.TYPE_MESSAGE_MINE)
                 .messageTime(messageTime).message(message).build());
-        mAdapter.notifyItemInserted(mMessages.size() - 1);
+        mMessageAdapter.notifyItemInserted(mMessages.size() - 1);
         scrollToBottom();
     }
 
     private void addFriendsMessage(String messageTime, String message) {
         mMessages.add(new Message.Builder(Message.TYPE_MESSAGE_FRIENDS)
                 .messageTime(messageTime).message(message).build());
-        mAdapter.notifyItemInserted(mMessages.size() - 1);
+        mMessageAdapter.notifyItemInserted(mMessages.size() - 1);
         scrollToBottom();
     }
 
     private void addTyping(String username) {
         mMessages.add(new Message.Builder(Message.TYPE_ACTION)
                 .username(username).build());
-        mAdapter.notifyItemInserted(mMessages.size() - 1);
+        mMessageAdapter.notifyItemInserted(mMessages.size() - 1);
         scrollToBottom();
     }
 
@@ -364,7 +349,7 @@ public class ChatWindowActivity extends BaseActivity {
                     Log.e("Say To Someone", "" + data.toString());
                     try {
 
-                        username = data.getString("username");
+                        username = data.getString("id");
                         message = data.getString("message");
 
                     } catch (JSONException e) {
@@ -384,7 +369,7 @@ public class ChatWindowActivity extends BaseActivity {
             Message message = mMessages.get(i);
             if (message.getType() == Message.TYPE_ACTION && message.getUsername().equals(username)) {
                 mMessages.remove(i);
-                mAdapter.notifyItemRemoved(i);
+                mMessageAdapter.notifyItemRemoved(i);
             }
         }
     }

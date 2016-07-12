@@ -20,6 +20,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -33,17 +34,15 @@ public class BaseActivity extends AppCompatActivity {
     public String mUsername;
     public Socket mSocket;
     public String mUserID;
-    public RecyclerView.Adapter mUserAdapter;
+    public RecyclerView.Adapter mUserAdapter,mMessageAdapter;
     public Boolean isConnected = true;
-    public RecyclerView mUserListView;
-    ArrayList<User> mUserList = new ArrayList<User>();
-    User mReceiveUser;
-    Button mLogOutButton;
+    public ArrayList<User> mUserList = new ArrayList<User>();
+    public List<Message> mMessages = new ArrayList<Message>();
     public PrefsValues prefsValues;
     ProgressDialog progressDialog;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)    {
         super.onCreate(savedInstanceState);
 
         prefsValues = new PrefsValues(getApplicationContext(), "chat_me", 0);

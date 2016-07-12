@@ -1,34 +1,17 @@
 package com.github.nkzawa.socketio.androidchat;
 
-import android.app.ProgressDialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import io.socket.client.Socket;
-import io.socket.emitter.Emitter;
 
 
 public class ChatListActivity extends BaseActivity {
@@ -126,6 +109,7 @@ public class ChatListActivity extends BaseActivity {
         mSocket.on("user joined", onUserJoined);
         mSocket.on("user left", onUserLeft);
         mSocket.on("user_registration", user_registration);
+
         //mSocket.on("getOfflineMessage", getOfflineMessage);
 
         mSocket.connect();
