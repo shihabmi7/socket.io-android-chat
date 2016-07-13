@@ -66,7 +66,7 @@ public class ChatListActivity extends BaseActivity {
     protected void onStart() {
         super.onStart();
         //Log.e(" onStart ", "ChatListActivity Called : ");
-        UserRegistration();
+
     }
 
     @Override
@@ -75,6 +75,7 @@ public class ChatListActivity extends BaseActivity {
         Log.e(" onResume ", "ChatListActivity Called : ");
 
         // connetSocketAndListener();
+        UserRegistration();
         getOfflineMessage();
 
     }
@@ -155,8 +156,8 @@ public class ChatListActivity extends BaseActivity {
 
     public void getOfflineMessage() {
 
-
-        mSocket.emit("ask_for_offline_message", mUsername + "@gmail.com");
+        // fire hobe na
+        // mSocket.emit("ask_for_offline_message", mUsername + "@gmail.com");
 
 
         /*Handler handler = new Handler();
@@ -181,8 +182,10 @@ public class ChatListActivity extends BaseActivity {
                         JSONArray jsonArray = new JSONArray(args);
 
                         String aa = jsonArray.getString(0).toString();
-                        Log.e("getOfflineMessage:", aa);
                         JSONArray newArr = new JSONArray(aa);
+
+                        // Log.e("getOfflineMessage:", aa);
+                        Log.e("getOfflineMessage", newArr.length() + " message is arrived from ur friends." + newArr.length());
 //                        Log.e("email",newArr.getJSONObject(0).getString("email"));
 
                         for (int i = 0; i < newArr.length(); i++) {
@@ -193,10 +196,10 @@ public class ChatListActivity extends BaseActivity {
                             // addUserMessage(getDateToday(), jsonObject.getString("message"));
 
                         }
+
                         Toast.makeText(getApplicationContext(), newArr.length() + " message is arrived from from ur friends."
                                 , Toast.LENGTH_SHORT).show();
 
-                        Log.e("getOfflineMessage", newArr.length() + " message is arrived from ur friends." + newArr.length());
 
                     } catch (JSONException e) {
                         Log.e("getOfflineMessage", "JSONException" + e.toString());

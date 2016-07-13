@@ -175,6 +175,7 @@ public class BaseActivity extends AppCompatActivity {
             });
         }
     };
+
     public Emitter.Listener user_registration = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
