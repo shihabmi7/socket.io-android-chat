@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +25,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
     private static final int MINUTE_MILLIS = 60 * SECOND_MILLIS;
     private static final int HOUR_MILLIS = 60 * MINUTE_MILLIS;
     private static final int DAY_MILLIS = 24 * HOUR_MILLIS;
+    String LAST_SEEN = "last seen: ";
 
     public UserListAdapter(Context context, List<User> user) {
         mUser = user;
@@ -72,16 +74,26 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
     String getLastSeen(String formatted_date) {
 
         try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat(
-                    "yyyy-MM-dd hh:mm:ss");
 
+
+            String sample_date = "2016-07-13 05:00:09";
+//            String sample_date = "2016-07-13 11:57:30";
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat(
+                    "yyyy-MM-dd HH:mm:ss");
 
             String old_date = rightFormatDate(formatted_date);
             Date oldDate = dateFormat.parse(old_date);
 
             //get current date time with Date()
             Date date = new Date();
-            String current_date = dateFormat.format(date);
+
+            //get current date time with Calendar()
+            Calendar cal = Calendar.getInstance();
+            //System.out.println(dateFormat.format(cal.getTime()));
+
+            //String current_date = dateFormat.format(date);
+            String current_date = dateFormat.format(cal.getTime());
 
             Date currentDate = dateFormat.parse(current_date);
 
@@ -97,9 +109,38 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
             Log.e("Difference: ", " seconds: " + diffSeconds + " minutes: " + diffMinutes
                     + " hours: " + diffHours + " days: " + diffDays);
 
-            return
+            if (diff < MINUTE_MILLIS) {
+
+                return LAST_SEEN + "just now";
+
+            } else if (diff < 2 * MINUTE_MILLIS) {
+
+                return LAST_SEEN + "a minute ago";
+
+            } else if (diff < 50 * MINUTE_MILLIS) {
+
+                return LAST_SEEN + (diff / MINUTE_MILLIS) + " minutes ago";
+
+            } else if (diff < 90 * MINUTE_MILLIS) {
+
+                return LAST_SEEN + "an hour ago";
+
+            } else if (diff < 24 * HOUR_MILLIS) {
+
+                return LAST_SEEN + (diff / HOUR_MILLIS) + " hours ago";
+
+            } else if (diff < 48 * HOUR_MILLIS) {
+
+                return LAST_SEEN + "yesterday";
+
+            } else {
+
+                return LAST_SEEN + (diff / DAY_MILLIS) + " days ago";
+            }
+
+            /*return
                     " seconds: " + diffSeconds + " minutes: " + diffMinutes
-                            + " hours: " + diffHours + " days: " + diffDays;
+                            + " hours: " + diffHours + " days: " + diffDays;*/
         } catch (Exception e) {
 
             e.printStackTrace();
@@ -111,7 +152,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
 
     public String getTimeAgo(String formatted_date) {
 
-        String LAST_SEEN = "last seen: ";
+
 
         try {
 
