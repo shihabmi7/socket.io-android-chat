@@ -72,27 +72,34 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
     String getLastSeen(String formatted_date) {
 
         try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat(
+                    "yyyy-MM-dd hh:mm:ss");
 
-            Date oldDate = rightFormatDateFromList(formatted_date);
-            System.out.println(oldDate);
 
-            Date currentDate = new Date();
+            String old_date = rightFormatDate(formatted_date);
+            Date oldDate = dateFormat.parse(old_date);
+
+            //get current date time with Date()
+            Date date = new Date();
+            String current_date = dateFormat.format(date);
+
+            Date currentDate = dateFormat.parse(current_date);
+
+            System.out.println("old date: " + old_date + " current date:  " + current_date);
+
             long diff = currentDate.getTime() - oldDate.getTime();
 
-            long seconds = diff / 1000;
-            long minutes = seconds / 60;
-            long hours = minutes / 60;
-            long days = hours / 24;
+            long diffSeconds = diff / 1000 % 60;
+            long diffMinutes = diff / (60 * 1000) % 60;
+            long diffHours = diff / (60 * 60 * 1000) % 24;
+            long diffDays = diff / (24 * 60 * 60 * 1000);
 
-            if (oldDate.before(currentDate)) {
+            Log.e("Difference: ", " seconds: " + diffSeconds + " minutes: " + diffMinutes
+                    + " hours: " + diffHours + " days: " + diffDays);
 
-//                Log.e("Difference: ", " seconds: " + seconds + " minutes: " + minutes
-//                        + " hours: " + hours + " days: " + days);
-                Log.e("Difference: ", " seconds: " + seconds + " minutes: " + minutes
-                        + " hours: " + hours + " days: " + days);
-            }
             return
-                    "last seen: " + days + " day " + hours + " h ago";
+                    " seconds: " + diffSeconds + " minutes: " + diffMinutes
+                            + " hours: " + diffHours + " days: " + diffDays;
         } catch (Exception e) {
 
             e.printStackTrace();
