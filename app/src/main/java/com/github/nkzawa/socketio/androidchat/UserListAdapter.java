@@ -56,7 +56,9 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
 
             //Log.i("aUser_LastSeen", "" + aUser.getLastSeen());
             //String lastSeen = getLastSeen(aUser.getLastSeen());
-            String lastSeen = getLastSeen(aUser.getLastSeen());
+            //String lastSeen = getLastSeen(aUser.getLastSeen(), aUser.getUserName());
+           // String lastSeen = rightFormatDate(aUser.getLastSeen());
+            String lastSeen = aUser.getLastSeen();
             //String lastSeen = twoDatesBetweenTime(rightFormatDate(aUser.getLastSeen()));
 
             //Log.i("lastSeen", "" + lastSeen);
@@ -70,8 +72,24 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
         //viewHolder.setmLastSeen(aUser.getLastSeen());
     }
 
+    String rightFormatDate(String date) {
 
-    String getLastSeen(String formatted_date) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                "yyyy-MM-dd HH:mm:ss");
+        try {
+
+            //Log.e("Wrong Format", "" + formatted_date);
+            date = date.replace('T', ' ');
+            date = date.replace(".000Z", "");
+            //Log.e("Right Format", "" + formatted_date);
+            return date;
+
+        } catch (Exception w) {
+            return null;
+        }
+    }
+
+    String getLastSeen(String formatted_date, String user) {
 
         try {
 
@@ -81,8 +99,9 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
 
             SimpleDateFormat dateFormat = new SimpleDateFormat(
                     "yyyy-MM-dd HH:mm:ss");
-
             String old_date = rightFormatDate(formatted_date);
+
+            System.out.println(user + "" +old_date);
             Date oldDate = dateFormat.parse(old_date);
 
             //get current date time with Date()
@@ -109,7 +128,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
             Log.e("Difference: ", " seconds: " + diffSeconds + " minutes: " + diffMinutes
                     + " hours: " + diffHours + " days: " + diffDays);
 
-            if (diff < MINUTE_MILLIS) {
+            /*if (diff < MINUTE_MILLIS) {
 
                 return LAST_SEEN + "just now";
 
@@ -136,11 +155,14 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
             } else {
 
                 return LAST_SEEN + (diff / DAY_MILLIS) + " days ago";
-            }
+            }*/
 
             /*return
                     " seconds: " + diffSeconds + " minutes: " + diffMinutes
                             + " hours: " + diffHours + " days: " + diffDays;*/
+            return
+                    " seconds: " + diffSeconds + " minutes: " + diffMinutes
+                            + " hours: " + diffHours + " days: " + diffDays;
         } catch (Exception e) {
 
             e.printStackTrace();
@@ -150,8 +172,8 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
 
     }
 
-    public String getTimeAgo(String formatted_date) {
 
+    public String getTimeAgo(String formatted_date) {
 
 
         try {
@@ -254,23 +276,6 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
             formatted_date = formatted_date.replace(".000Z", "");
             //Log.e("Right Format", "" + formatted_date);
             return dateFormat.parse(formatted_date);
-
-        } catch (Exception w) {
-            return null;
-        }
-    }
-
-    String rightFormatDate(String date) {
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat(
-                "yyyy-MM-dd HH:mm:ss");
-        try {
-
-            //Log.e("Wrong Format", "" + formatted_date);
-            date = date.replace('T', ' ');
-            date = date.replace(".000Z", "");
-            //Log.e("Right Format", "" + formatted_date);
-            return date;
 
         } catch (Exception w) {
             return null;

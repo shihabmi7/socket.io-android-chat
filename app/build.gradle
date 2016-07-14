@@ -46,4 +46,5 @@ dependencies {
         exclude group: 'org.json', module: 'json'
     }
     compile 'com.google.code.gson:gson:2.7'
+    compile 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
 }

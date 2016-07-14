@@ -11,9 +11,9 @@ public class DateDifferentExample {
 
     void calculateDifference(String dateStart,String dateStop){
 
+
         /*String dateStart = "01/14/2012 09:29:58";
         String dateStop = "01/15/2012 10:31:48";*/
-
         Date d1 = null;
         Date d2 = null;
 

@@ -176,6 +176,7 @@ public class BaseActivity extends AppCompatActivity {
         }
     };
 
+
     public Emitter.Listener user_registration = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -184,20 +185,19 @@ public class BaseActivity extends AppCompatActivity {
                 public void run() {
                     try {
 
+                        /*JSONArray jsonArray = new JSONArray(args);
+                        String original_string = jsonArray.getString(0).toString();
+                        //String aa = jsonArray.getString(0).toString();
+                         Log.e("Original Json", original_string);*/
+
 //                        JSONObject jObj = args.;
-
                         mUserList.clear();
-
                         Gson gson = new Gson();
                         String json = gson.toJson(args);
-
                         JSONArray test = new JSONArray(json);
-                        Log.e("use_reg->ChatList", json);
+                        Log.e("GSON->UserList", json);
 
-                        //JSONArray jsonArray = new JSONArray(args);
-                        //String aa = jsonArray.getString(0).toString();
-                        //String aa = jsonArray.getString(0).toString();
-                        // Log.i("user registration", aa);
+
                         String aa = test.getString(0).toString();
                         JSONObject jsonObject = test.getJSONObject(0);
                         JSONArray valueArrays = jsonObject.getJSONArray("values");
@@ -206,13 +206,9 @@ public class BaseActivity extends AppCompatActivity {
                         for (int i = 0; i < valueArrays.length(); i++) {
 
                             JSONObject jo = valueArrays.getJSONObject(i);
-
                             String nvp = jo.getString("nameValuePairs");
-
                             jo = new JSONObject(nvp);
-
                             String name = jo.getString("user_name");
-
                             if (name.equalsIgnoreCase(mUsername)) {
 
                                 //Log.i("user_matched", "I am " + mUsername);
