@@ -1,10 +1,12 @@
-package com.github.nkzawa.socketio.androidchat;
+package com.github.nkzawa.socketio.androidchat.utils;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+
+import com.github.nkzawa.socketio.androidchat.fragment.MainFragment;
 
 /**
  * Created by ASUS on 6/19/2016.

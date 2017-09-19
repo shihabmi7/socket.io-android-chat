@@ -1,5 +1,7 @@
 
-package com.github.nkzawa.socketio.androidchat;
+package com.github.nkzawa.socketio.androidchat.utils;
+
+import android.net.ParseException;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -7,9 +9,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
-
-import android.net.ParseException;
-import android.util.Log;
 
 /***
  * Provides helper methods for date utilities.

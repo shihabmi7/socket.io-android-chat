@@ -1,4 +1,4 @@
-package com.github.nkzawa.socketio.androidchat;
+package com.github.nkzawa.socketio.androidchat.activity;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,6 +10,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.github.nkzawa.socketio.androidchat.R;
+import com.github.nkzawa.socketio.androidchat.adapter.UserListAdapter;
+import com.github.nkzawa.socketio.androidchat.fragment.MainFragment;
+import com.github.nkzawa.socketio.androidchat.model.User;
+import com.github.nkzawa.socketio.androidchat.utils.RecyclerTouchListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,23 +29,61 @@ public class ChatListActivity extends BaseActivity {
 
     private static final int REQUEST_LOGIN = 0;
     private static final int TYPING_TIMER_LENGTH = 600;
-
+    //ArrayList<User> mUserList = new ArrayList<User>();
+    User mReceiveUser;
+    Button mLogOutButton;
     private RecyclerView mMessagesView;
     private EditText mInputMessageView;
-
     //private RecyclerView.Adapter mUserAdapter;
     private boolean mTyping = false;
     private Handler mTypingHandler = new Handler();
     //private String mUsername;
     //private Socket mSocket;
     private String mUserID;
-
     private Boolean isConnected = true;
     private RecyclerView mUserListView;
-    //ArrayList<User> mUserList = new ArrayList<User>();
-    User mReceiveUser;
-    Button mLogOutButton;
+    private Emitter.Listener getOfflineMessage = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
 
+                    try {
+                        JSONArray jsonArray = new JSONArray(args);
+
+                        String aa = jsonArray.getString(0).toString();
+                        JSONArray newArr = new JSONArray(aa);
+
+                        // Log.e("getOfflineMessage:", aa);
+                        Log.e("getOfflineMessage", newArr.length() + " message is arrived from ur friends." + newArr.length());
+//                        Log.e("email",newArr.getJSONObject(0).getString("email"));
+
+                        for (int i = 0; i < newArr.length(); i++) {
+
+                            JSONObject jsonObject = newArr.getJSONObject(i);
+                            String sender_name = jsonObject.getString("sender_mail");
+
+                            // addUserMessage(getDateToday(), jsonObject.getString("message"));
+
+                        }
+
+                        Toast.makeText(getApplicationContext(), newArr.length() + " message is arrived from from ur friends."
+                                , Toast.LENGTH_SHORT).show();
+
+
+                    } catch (JSONException e) {
+                        Log.e("getOfflineMessage", "JSONException" + e.toString());
+                        //return;
+                    } catch (Exception e) {
+                        Log.e("getOfflineMessage", "Exception" + e.toString());
+                        //return;
+                    }
+
+                }
+            });
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -79,7 +123,6 @@ public class ChatListActivity extends BaseActivity {
         getOfflineMessage();
 
     }
-
 
     @Override
     protected void onPause() {
@@ -170,49 +213,6 @@ public class ChatListActivity extends BaseActivity {
         }, 100);
 */
     }
-
-    private Emitter.Listener getOfflineMessage = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-
-                    try {
-                        JSONArray jsonArray = new JSONArray(args);
-
-                        String aa = jsonArray.getString(0).toString();
-                        JSONArray newArr = new JSONArray(aa);
-
-                        // Log.e("getOfflineMessage:", aa);
-                        Log.e("getOfflineMessage", newArr.length() + " message is arrived from ur friends." + newArr.length());
-//                        Log.e("email",newArr.getJSONObject(0).getString("email"));
-
-                        for (int i = 0; i < newArr.length(); i++) {
-
-                            JSONObject jsonObject = newArr.getJSONObject(i);
-                            String sender_name = jsonObject.getString("sender_mail");
-
-                            // addUserMessage(getDateToday(), jsonObject.getString("message"));
-
-                        }
-
-                        Toast.makeText(getApplicationContext(), newArr.length() + " message is arrived from from ur friends."
-                                , Toast.LENGTH_SHORT).show();
-
-
-                    } catch (JSONException e) {
-                        Log.e("getOfflineMessage", "JSONException" + e.toString());
-                        //return;
-                    } catch (Exception e) {
-                        Log.e("getOfflineMessage", "Exception" + e.toString());
-                        //return;
-                    }
-
-                }
-            });
-        }
-    };
 
     @Override
     public void onBackPressed() {

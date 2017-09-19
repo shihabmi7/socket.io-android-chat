@@ -1,4 +1,4 @@
-package com.github.nkzawa.socketio.androidchat;
+package com.github.nkzawa.socketio.androidchat.model;
 
 /**
  * Created by himanshusoni on 06/09/15.

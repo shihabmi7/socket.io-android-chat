@@ -1,10 +1,11 @@
-package com.github.nkzawa.socketio.androidchat;
+package com.github.nkzawa.socketio.androidchat.utils;
 
 import android.app.Application;
-import io.socket.client.IO;
-import io.socket.client.Socket;
 
 import java.net.URISyntaxException;
+
+import io.socket.client.IO;
+import io.socket.client.Socket;
 
 public class ChatApplication extends Application {
 

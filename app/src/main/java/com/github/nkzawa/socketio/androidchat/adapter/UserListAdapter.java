@@ -1,4 +1,4 @@
-package com.github.nkzawa.socketio.androidchat;
+package com.github.nkzawa.socketio.androidchat.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -8,6 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.github.nkzawa.socketio.androidchat.R;
+import com.github.nkzawa.socketio.androidchat.model.User;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -19,13 +22,13 @@ import java.util.concurrent.TimeUnit;
 
 public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHolder> {
 
-    private List<User> mUser;
-    private int[] mUsernameColors;
     private static final int SECOND_MILLIS = 1000;
     private static final int MINUTE_MILLIS = 60 * SECOND_MILLIS;
     private static final int HOUR_MILLIS = 60 * MINUTE_MILLIS;
     private static final int DAY_MILLIS = 24 * HOUR_MILLIS;
     String LAST_SEEN = "last seen: ";
+    private List<User> mUser;
+    private int[] mUsernameColors;
 
     public UserListAdapter(Context context, List<User> user) {
         mUser = user;
@@ -62,7 +65,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
             //String lastSeen = twoDatesBetweenTime(rightFormatDate(aUser.getLastSeen()));
 
             //Log.i("lastSeen", "" + lastSeen);
-            viewHolder.setmLastSeen(lastSeen);
+           // viewHolder.setmLastSeen(lastSeen);
 
         } catch (Exception e) {
 

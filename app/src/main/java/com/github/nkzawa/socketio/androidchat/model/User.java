@@ -1,4 +1,4 @@
-package com.github.nkzawa.socketio.androidchat;
+package com.github.nkzawa.socketio.androidchat.model;
 
 /**
  * Created by ASUS on 6/19/2016.

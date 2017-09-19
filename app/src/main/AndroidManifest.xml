@@ -5,19 +5,19 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name="com.github.nkzawa.socketio.androidchat.ChatApplication"
+        android:name="com.github.nkzawa.socketio.androidchat.utils.ChatApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
-            android:name="com.github.nkzawa.socketio.androidchat.MainActivity"
+            android:name="com.github.nkzawa.socketio.androidchat.activity.MainActivity"
             android:label="@string/app_name">
 
         </activity>
 
         <activity
-            android:name="com.github.nkzawa.socketio.androidchat.LoginActivity"
+            android:name="com.github.nkzawa.socketio.androidchat.activity.LoginActivity"
             android:label="@string/title_activity_login"
             android:theme="@style/Theme.AppCompat"
             android:windowSoftInputMode="adjustResize|stateVisible">
@@ -30,16 +30,16 @@
         </activity>
 
         <activity
-            android:name="com.github.nkzawa.socketio.androidchat.ChatListActivity"
+            android:name="com.github.nkzawa.socketio.androidchat.activity.ChatListActivity"
             android:theme="@style/AppTheme.NoActionBar"></activity>
 
         <activity
-            android:name="com.github.nkzawa.socketio.androidchat.ChatWindowActivity"
-            android:parentActivityName=".ChatListActivity"
+            android:name="com.github.nkzawa.socketio.androidchat.activity.ChatWindowActivity"
+            android:parentActivityName=".activity.ChatListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.github.nkzawa.socketio.androidchat.ChatListActivity" />
+                android:value="com.github.nkzawa.socketio.androidchat.activity.ChatListActivity" />
         </activity>
 
     </application>

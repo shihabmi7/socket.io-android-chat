@@ -1,4 +1,4 @@
-package com.github.nkzawa.socketio.androidchat;
+package com.github.nkzawa.socketio.androidchat.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

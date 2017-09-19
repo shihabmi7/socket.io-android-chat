@@ -1,33 +1,19 @@
-package com.github.nkzawa.socketio.androidchat;
+package com.github.nkzawa.socketio.androidchat.utils;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.v4.content.ContextCompat;
 
 public class PrefsValues {
 
+    Context context = null;
+    Activity activity;
     private SharedPreferences mPrefs;
-
     private String members_no = "mem_no";
     private String members_died_no = "mem_died_no";
     private String house_id = "house_id";
     private String userName = "user_name";
-
-    Context context = null;
-    Activity activity;
-
-    public String getUserName() {
-        return mPrefs.getString(this.userName, "");
-    }
-
-    public void setUserName(String userName) {
-
-        mPrefs.edit().putString(this.userName, userName).commit();
-
-    }
-
 
     public PrefsValues(Context context) {
 
@@ -43,12 +29,22 @@ public class PrefsValues {
 
     }
 
+
     public PrefsValues(Activity activity) {
 
         this.activity = activity;
         mPrefs = activity.getPreferences(Context.MODE_PRIVATE);
     }
 
+    public String getUserName() {
+        return mPrefs.getString(this.userName, "");
+    }
+
+    public void setUserName(String userName) {
+
+        mPrefs.edit().putString(this.userName, userName).commit();
+
+    }
 
     public SharedPreferences getPrefs() {
         return mPrefs;

@@ -1,4 +1,4 @@
-package com.github.nkzawa.socketio.androidchat;
+package com.github.nkzawa.socketio.androidchat.activity;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,14 +17,17 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.nkzawa.socketio.androidchat.R;
+import com.github.nkzawa.socketio.androidchat.model.Message;
+import com.github.nkzawa.socketio.androidchat.model.User;
+import com.github.nkzawa.socketio.androidchat.utils.MessageAdapter;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 
 import io.socket.emitter.Emitter;
 
@@ -32,11 +35,157 @@ import io.socket.emitter.Emitter;
 public class ChatWindowActivity extends BaseActivity {
 
     private static final int TYPING_TIMER_LENGTH = 600;
+    public Emitter.Listener onNewMessage = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    String username;
+                    String message;
+                    try {
+                        username = data.getString("username");
+                        message = data.getString("message");
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+                    //removeTyping(username);
+                    // addUserMessage(username, message);
+                }
+            });
+
+        }
+    };
     private EditText mInputMessageView;
     private boolean mTyping = false;
     private Handler mTypingHandler = new Handler();
     private User mReceiveUser;
     private Toolbar toolbar;
+    private Emitter.Listener get_chat_history = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+//   {"message_id":353,"sender_mail":"sam@gmail.com",
+// "receiver_mail":"shihab@gmail.com","message":"fgdgdgd","message_status":1,
+// "arrival_time":"2016-07-12T11:09:55.000Z"}
+                    try {
+                        JSONArray jsonArray = new JSONArray(args);
+
+                        String aa = jsonArray.getString(0).toString();
+                        Log.e("chat_history:", aa);
+                        JSONArray newArr = new JSONArray(aa);
+//                        Log.e("email",newArr.getJSONObject(0).getString("email"));
+                        for (int i = 0; i < newArr.length(); i++) {
+
+                            JSONObject jsonObject = newArr.getJSONObject(i);
+                            String sender_name = jsonObject.getString("sender_mail");
+                            String message = jsonObject.getString("message");
+                            String arrival_time = jsonObject.getString("arrival_time");
+
+                            if (sender_name.equalsIgnoreCase(mUsername + "@gmail.com")) {
+
+                                addUserMessage(getDateToday(), message);
+
+                            } else {
+
+                                addFriendsMessage(arrival_time, message);
+
+                            }
+
+                        }
+                        Toast.makeText(getApplicationContext(), newArr.length() + " message in history"
+                                , Toast.LENGTH_SHORT).show();
+
+                        Log.e("chat_history", newArr.length() + " message in history");
+
+                    } catch (JSONException e) {
+                        Log.e("get_chat_history", "JSONException" + e.toString());
+                        //return;
+                    } catch (Exception e) {
+                        Log.e("get_chat_history", "Exception" + e.toString());
+                        //return;
+                    }
+
+                }
+            });
+        }
+    };
+    private Emitter.Listener onTyping = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    String username;
+                    try {
+                        username = data.getString("username");
+                    } catch (JSONException e) {
+                        return;
+                    }
+                    addTyping(username);
+                }
+            });
+        }
+    };
+    private Emitter.Listener onStopTyping = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    String username;
+                    try {
+                        username = data.getString("username");
+                    } catch (JSONException e) {
+                        return;
+                    }
+                    removeTyping(username);
+                }
+            });
+        }
+    };
+    private Runnable onTypingTimeout = new Runnable() {
+        @Override
+        public void run() {
+            if (!mTyping) return;
+
+            mTyping = false;
+            mSocket.emit("stop typing");
+        }
+    };
+    private Emitter.Listener onSayToSomeone = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    String username;
+                    String message;
+
+                    Log.e("Say To Someone", "" + data.toString());
+                    try {
+
+                        username = data.getString("id");
+                        message = data.getString("message");
+
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+                    removeTyping(username);
+                    addFriendsMessage(getDateToday(), message);
+                }
+            });
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -232,160 +381,6 @@ public class ChatWindowActivity extends BaseActivity {
     public void scrollToBottom() {
         mMessagesRecyclerView.scrollToPosition(mMessageAdapter.getItemCount() - 1);
     }
-
-    private Emitter.Listener get_chat_history = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-
-//   {"message_id":353,"sender_mail":"sam@gmail.com",
-// "receiver_mail":"shihab@gmail.com","message":"fgdgdgd","message_status":1,
-// "arrival_time":"2016-07-12T11:09:55.000Z"}
-                    try {
-                        JSONArray jsonArray = new JSONArray(args);
-
-                        String aa = jsonArray.getString(0).toString();
-                        Log.e("chat_history:", aa);
-                        JSONArray newArr = new JSONArray(aa);
-//                        Log.e("email",newArr.getJSONObject(0).getString("email"));
-                        for (int i = 0; i < newArr.length(); i++) {
-
-                            JSONObject jsonObject = newArr.getJSONObject(i);
-                            String sender_name = jsonObject.getString("sender_mail");
-                            String message = jsonObject.getString("message");
-                            String arrival_time = jsonObject.getString("arrival_time");
-
-                            if (sender_name.equalsIgnoreCase(mUsername + "@gmail.com")) {
-
-                                addUserMessage(getDateToday(), message);
-
-                            } else {
-
-                                addFriendsMessage(arrival_time, message);
-
-                            }
-
-                        }
-                        Toast.makeText(getApplicationContext(), newArr.length() + " message in history"
-                                , Toast.LENGTH_SHORT).show();
-
-                        Log.e("chat_history", newArr.length() + " message in history");
-
-                    } catch (JSONException e) {
-                        Log.e("get_chat_history", "JSONException" + e.toString());
-                        //return;
-                    } catch (Exception e) {
-                        Log.e("get_chat_history", "Exception" + e.toString());
-                        //return;
-                    }
-
-                }
-            });
-        }
-    };
-    public Emitter.Listener onNewMessage = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    JSONObject data = (JSONObject) args[0];
-                    String username;
-                    String message;
-                    try {
-                        username = data.getString("username");
-                        message = data.getString("message");
-                    } catch (JSONException e) {
-                        return;
-                    }
-
-                    //removeTyping(username);
-                    // addUserMessage(username, message);
-                }
-            });
-
-        }
-    };
-
-
-    private Emitter.Listener onTyping = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    JSONObject data = (JSONObject) args[0];
-                    String username;
-                    try {
-                        username = data.getString("username");
-                    } catch (JSONException e) {
-                        return;
-                    }
-                    addTyping(username);
-                }
-            });
-        }
-    };
-
-    private Emitter.Listener onStopTyping = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    JSONObject data = (JSONObject) args[0];
-                    String username;
-                    try {
-                        username = data.getString("username");
-                    } catch (JSONException e) {
-                        return;
-                    }
-                    removeTyping(username);
-                }
-            });
-        }
-    };
-
-
-    private Runnable onTypingTimeout = new Runnable() {
-        @Override
-        public void run() {
-            if (!mTyping) return;
-
-            mTyping = false;
-            mSocket.emit("stop typing");
-        }
-    };
-
-    private Emitter.Listener onSayToSomeone = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    JSONObject data = (JSONObject) args[0];
-                    String username;
-                    String message;
-
-                    Log.e("Say To Someone", "" + data.toString());
-                    try {
-
-                        username = data.getString("id");
-                        message = data.getString("message");
-
-                    } catch (JSONException e) {
-                        return;
-                    }
-
-                    removeTyping(username);
-                    addFriendsMessage(getDateToday(), message);
-                }
-            });
-        }
-    };
-
 
     @Override
     public void onBackPressed() {

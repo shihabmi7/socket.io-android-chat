@@ -1,4 +1,4 @@
-package com.github.nkzawa.socketio.androidchat;
+package com.github.nkzawa.socketio.androidchat.activity;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -15,6 +15,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.nkzawa.socketio.androidchat.R;
+import com.github.nkzawa.socketio.androidchat.utils.ApplicationData;
+import com.github.nkzawa.socketio.androidchat.utils.ChatApplication;
+import com.github.nkzawa.socketio.androidchat.utils.DebugLog;
+import com.github.nkzawa.socketio.androidchat.utils.PrefsValues;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,15 +33,89 @@ import io.socket.emitter.Emitter;
  */
 public class LoginActivity extends Activity {
 
-    private EditText mUsernameView;
-
-    private String mUsername;
-
-    private Socket mSocket;
     PrefsValues prefsValues;
     ChatApplication app;
-    private Boolean isConnected = true;
     ProgressDialog progressDialog;
+    private EditText mUsernameView;
+    private String mUsername;
+    private Socket mSocket;
+    private Boolean isConnected = true;
+    private Emitter.Listener login_success = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data = (JSONObject) args[0];
+            Log.e("login_success->Log in", "" + args.toString());
+            int numUsers;
+            try {
+                numUsers = data.getInt("numUsers");
+            } catch (JSONException e) {
+                return;
+            }
+
+            goToHomePage(mUsername, numUsers);
+            progressDialog.dismiss();
+
+        }
+    };
+    private Emitter.Listener onConnect = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    try {
+                        //JSONObject data = (JSONObject) args[0];
+                        Log.e("onConnect->Log in", "" + args.toString());
+
+                        if (!isConnected) {
+                            if (null != mUsername)
+                                mSocket.emit("add user", mUsername);
+
+                            Toast.makeText(getApplicationContext(),
+                                    R.string.connect, Toast.LENGTH_LONG).show();
+
+                            isConnected = true;
+                        }
+
+                    } catch (Exception e) {
+
+                    }
+
+
+                }
+            });
+        }
+    };
+    private Emitter.Listener onDisconnect = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.e("onDisconnect->Log in", "" + args[0].toString());
+                    isConnected = false;
+                    progressDialog.dismiss();
+                    Toast.makeText(getApplicationContext(),
+                            R.string.disconnect, Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    };
+    private Emitter.Listener onConnectError = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.e("onConnectError->Log in", "" + args[0].toString());
+                    progressDialog.dismiss();
+                    Toast.makeText(getApplicationContext(),
+                            R.string.error_connect, Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,14 +243,12 @@ public class LoginActivity extends Activity {
         mSocket.emit("add user", username + "@gmail.com");
     }
 
-
     private void oldUserLogin(String username) {
 
         mUsername = username;
         // perform the user login attempt.
         mSocket.emit("add user", username + "@gmail.com");
     }
-
 
     void goToHomePage(String name, int numUsers) {
 
@@ -209,87 +287,6 @@ public class LoginActivity extends Activity {
         System.exit(0);
         android.os.Process.killProcess(android.os.Process.myPid());
     }
-
-    private Emitter.Listener login_success = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-            JSONObject data = (JSONObject) args[0];
-            Log.e("login_success->Log in", "" + args.toString());
-            int numUsers;
-            try {
-                numUsers = data.getInt("numUsers");
-            } catch (JSONException e) {
-                return;
-            }
-
-            goToHomePage(mUsername, numUsers);
-            progressDialog.dismiss();
-
-        }
-    };
-
-
-    private Emitter.Listener onConnect = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-
-                    try {
-                        //JSONObject data = (JSONObject) args[0];
-                        Log.e("onConnect->Log in", "" + args.toString());
-
-                        if (!isConnected) {
-                            if (null != mUsername)
-                                mSocket.emit("add user", mUsername);
-
-                            Toast.makeText(getApplicationContext(),
-                                    R.string.connect, Toast.LENGTH_LONG).show();
-
-                            isConnected = true;
-                        }
-
-                    } catch (Exception e) {
-
-                    }
-
-
-                }
-            });
-        }
-    };
-
-    private Emitter.Listener onDisconnect = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Log.e("onDisconnect->Log in", "" + args[0].toString());
-                    isConnected = false;
-                    progressDialog.dismiss();
-                    Toast.makeText(getApplicationContext(),
-                            R.string.disconnect, Toast.LENGTH_LONG).show();
-                }
-            });
-        }
-    };
-
-    private Emitter.Listener onConnectError = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Log.e("onConnectError->Log in", "" + args[0].toString());
-                    progressDialog.dismiss();
-                    Toast.makeText(getApplicationContext(),
-                            R.string.error_connect, Toast.LENGTH_LONG).show();
-                }
-            });
-        }
-    };
 
 }
 
