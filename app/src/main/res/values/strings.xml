@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Job Town Chat</string>
+    <string name="app_name">Shihab Chat App</string>
     <string name="action_leave">Leave</string>
     <string name="action_logout">Log out</string>
     <string name="action_send">Send</string>

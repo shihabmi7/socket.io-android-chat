@@ -202,7 +202,7 @@ public class ChatWindowActivity extends BaseActivity {
 
         connetSocketAndListener();
         initiateUI();
-        getChatHistory();
+//        getChatHistory();
 
     }
 
