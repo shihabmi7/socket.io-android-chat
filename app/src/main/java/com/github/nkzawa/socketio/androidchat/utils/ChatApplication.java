@@ -21,4 +21,9 @@ public class ChatApplication extends Application {
     public Socket getSocket() {
         return mSocket;
     }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+    }
 }

@@ -20,6 +20,7 @@ import com.github.nkzawa.socketio.androidchat.utils.ApplicationData;
 import com.github.nkzawa.socketio.androidchat.utils.ChatApplication;
 import com.github.nkzawa.socketio.androidchat.utils.DebugLog;
 import com.github.nkzawa.socketio.androidchat.utils.PrefsValues;
+import com.google.gson.Gson;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -268,6 +269,7 @@ public class LoginActivity extends Activity {
         mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
         mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
         mSocket.on("login success", login_success);
+        mSocket.on("request:ride:bike", request_ride);
 
         mSocket.connect();
 
@@ -287,6 +289,32 @@ public class LoginActivity extends Activity {
         System.exit(0);
         android.os.Process.killProcess(android.os.Process.myPid());
     }
+
+    private Emitter.Listener request_ride = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+
+                        //JSONObject data = (JSONObject) args[0];
+                        Gson gson = new Gson();
+                        String json = gson.toJson(args);
+                        Log.e("request_ride->Ride:", "" + json);
+
+                        Toast.makeText(getApplicationContext(),
+                                "" + json.toString(), Toast.LENGTH_LONG).show();
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+                }
+            });
+        }
+    };
 
 }
 
