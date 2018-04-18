@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
@@ -45,7 +46,7 @@ public class LoginActivity extends Activity {
         @Override
         public void call(Object... args) {
             JSONObject data = (JSONObject) args[0];
-            Log.e("login_success->Log in", "" + args.toString());
+            Log.e("login_success", "Log in:" + args.toString());
             int numUsers;
             try {
                 numUsers = data.getInt("numUsers");
@@ -64,10 +65,13 @@ public class LoginActivity extends Activity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-
                     try {
+                        Gson gson = new Gson();
+                        String json = gson.toJson(args);
                         //JSONObject data = (JSONObject) args[0];
-                        Log.e("onConnect->Log in", "" + args.toString());
+                        if (mSocket.connected()) {
+                            Log.e("onConnect", "Socket Id: " + mSocket.id());
+                        }
 
                         if (!isConnected) {
                             if (null != mUsername)
@@ -80,7 +84,7 @@ public class LoginActivity extends Activity {
                         }
 
                     } catch (Exception e) {
-
+                        e.printStackTrace();
                     }
 
 
@@ -94,7 +98,7 @@ public class LoginActivity extends Activity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.e("onDisconnect->Log in", "" + args[0].toString());
+                    Log.e("onDisconnect", "Log in" + args[0].toString());
                     isConnected = false;
                     progressDialog.dismiss();
                     Toast.makeText(getApplicationContext(),
@@ -109,10 +113,27 @@ public class LoginActivity extends Activity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.e("onConnectError->Log in", "" + args[0].toString());
+                    Log.e("onConnectError", "Log in" + args[0].toString());
                     progressDialog.dismiss();
                     Toast.makeText(getApplicationContext(),
                             R.string.error_connect, Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onTimeOutError = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.e("onTimeOutError", "onTimeOutError:" + args[0].toString());
+                    if (progressDialog!=null && progressDialog.isShowing()){
+                        progressDialog.dismiss();
+                        Toast.makeText(getApplicationContext(),
+                                "onTimeOutError", Toast.LENGTH_LONG).show();
+                    }
                 }
             });
         }
@@ -122,7 +143,7 @@ public class LoginActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         try {
             progressDialog = new ProgressDialog(this);
             progressDialog.setMessage(getString(R.string.loading_message));
@@ -130,10 +151,6 @@ public class LoginActivity extends Activity {
             progressDialog.setCancelable(true);
 
             prefsValues = new PrefsValues(getApplicationContext(), "chat_me", 0);
-
-
-            app = (ChatApplication) getApplication();
-            //mSocket = app.getSocket();
 
             // Set up the login form.
             mUsernameView = (EditText) findViewById(R.id.username_input);
@@ -156,34 +173,26 @@ public class LoginActivity extends Activity {
                 }
             });
 
-            //mSocket.on("login", login_success);
-
-
         } catch (Exception e) {
 
             Toast.makeText(getApplicationContext(), "Error" + e.toString(), Toast.LENGTH_LONG).show();
             DebugLog.log("LOg In : " + e.toString());
         }
 
-
+        connetSocketAndListener();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-        connetSocketAndListener();
         Log.e("Log in onResume", "onResume");
-
         String name = getSharedPreferences("chat_me", 0).getString("user_name", "");
-
-        if (!name.isEmpty()) {
+        /*if (!name.isEmpty()) {
             //oldUserLogin(prefsValues.getUserName());
             attemptLogin(prefsValues.getUserName());
             Toast.makeText(getApplicationContext(), "Successfully Logged in", Toast.LENGTH_LONG).show();
-
         } else
-            Toast.makeText(getApplicationContext(), "Give a name", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Give a name", Toast.LENGTH_LONG).show();*/
     }
 
     @Override
@@ -208,15 +217,11 @@ public class LoginActivity extends Activity {
     public void attemptLogin(String mUsername) {
 
         if (mSocket.connected()) {
-
             getConnected(mUsername);
-
         } else {
-
             connetSocketAndListener();
             getConnected(mUsername);
         }
-
     }
 
     void getConnected(String mUsername) {
@@ -262,15 +267,16 @@ public class LoginActivity extends Activity {
 
     public void connetSocketAndListener() {
 
-        ChatApplication app = (ChatApplication) getApplication();
-        mSocket = app.getSocket();
+//        ChatApplication app = (ChatApplication) getApplication();
+        mSocket = ChatApplication.getSocket();
         mSocket.on(Socket.EVENT_CONNECT, onConnect);
         mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
         mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
-        mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onTimeOutError);
         mSocket.on("login success", login_success);
-        mSocket.on("request:ride:bike", request_ride);
-
+//        mSocket.on("request:ride:bike", request_ride);
+//        mSocket.on("request:ride", request_ride);
+        mSocket.on("rideRequest", rideRequest);
         mSocket.connect();
 
     }
@@ -297,20 +303,40 @@ public class LoginActivity extends Activity {
                 @Override
                 public void run() {
                     try {
-
                         //JSONObject data = (JSONObject) args[0];
                         Gson gson = new Gson();
                         String json = gson.toJson(args);
-                        Log.e("request_ride->Ride:", "" + json);
+                        Log.e("request_ride", "" + json);
 
                         Toast.makeText(getApplicationContext(),
-                                "" + json.toString(), Toast.LENGTH_LONG).show();
+                                "" + json, Toast.LENGTH_LONG).show();
 
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                }
+            });
+        }
+    };
 
+    private Emitter.Listener rideRequest = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        //JSONObject data = (JSONObject) args[0];
+                        Gson gson = new Gson();
+                        String json = gson.toJson(args);
+                        Log.e("rideRequest", "" + json);
 
+                        Toast.makeText(getApplicationContext(),
+                                "" + json, Toast.LENGTH_LONG).show();
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             });
         }

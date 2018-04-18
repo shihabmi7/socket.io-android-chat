@@ -9,21 +9,19 @@ import io.socket.client.Socket;
 
 public class ChatApplication extends Application {
 
-    private Socket mSocket;
-    {
-        try {
-            mSocket = IO.socket(ApplicationData.CHAT_SERVER_URL);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    public static Socket mSocket;
 
-    public Socket getSocket() {
+    public static Socket getSocket() {
         return mSocket;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
+        try {
+            mSocket = IO.socket(ApplicationData.CHAT_SERVER_URL);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
